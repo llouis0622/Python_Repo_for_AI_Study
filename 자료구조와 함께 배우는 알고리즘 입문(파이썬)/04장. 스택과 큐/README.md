@@ -325,3 +325,212 @@ while True:
     else:
         break
 ```
+
+# 2. 큐란?
+
+## 1. 큐(Queue) 알아보기
+
+- 데이터를 임시 저장하는 자료구조
+- 선입선출(First In First Out) 구조
+- 인큐(Enqueue) : 데이터를 추가하는 작업
+- 디큐(Dequeue) : 데이터를 꺼내는 작업
+- 프런트(Front) : 데이터를 꺼내는 쪽
+- 리어(Rear) : 데이터를 넣는 쪽
+
+## 2. 배열로 큐 구현하기
+
+- 데이터를 배열에 인큐하기
+- 데이터를 배열에서 디큐하기 → 디큐를 하면서 배열에서 2번째 이후의 모든 원소를 하나씩 앞으로 옮김
+
+## 3. 링 버퍼로 큐 구현하기
+
+- 링 버퍼(Ring Buffer) : 배열 맨 끝의 원소 뒤에 맨 앞의 원소가 연결되는 자료구조
+    - 프런트(Front) : 맨 앞 원소의 인덱스
+    - 리어(Rear) : 맨 끝 원소 바로 뒤의 인덱스
+- `Empty` : 비어있는 큐를 호출할 때 내보내는 예외 처리
+- `Full` : 가득 차 있는 큐를 호출할 때 내보내는 예외 처리
+- `__init__()` 함수 : 큐 배열을 생성하는 등의 준비 작업 실행
+    - `que` : 큐의 배열로서 밀어 넣는 데이터를 저장하는 list형 배열
+    - `capacity` : 큐의 최대 크기를 나타내는 int형 정수
+    - `front` : 맨 앞의 원소를 나타내는 인덱스
+    - `rear` : 맨 끝의 원소를 나타내는 인덱스
+    - `no` : 큐에 쌓여 있는 데이터 개수를 나타내는 int형 정수
+- `__len__()` 함수 : 추가한 데이터 개수 반환
+- `is_empty()` 함수 : 큐가 비어 있는지를 판단
+- `is_full()` 함수 : 큐가 가득 차 있어서 더 이상 데이터를 추가할 수 없는 상태인지 검사
+
+```python
+# 고정 길이 큐 클래스 FixedQueue 구현하기
+# Do it! 실습 4-3 [A]
+from typing import Any
+
+class FixedQueue:
+
+    class Empty(Exception):
+        """비어 있는 FixedQueue에 대해 deque 또는 peek를 호출할 때 내보내는 예외처리"""
+        pass
+
+    class Full(Exception):
+        """가득 찬 FixedQueue에 enque를 호출할 때 내보내는 예외처리"""
+        pass
+
+    def __init__(self, capacity: int) -> None:
+        """초기화 선언"""
+        self.no = 0     # 현재 데이터 개수
+        self.front = 0  # 맨앞 원소 커서
+        self.rear = 0   # 맨끝 원소  커서
+        self.capacity = capacity      # 큐의 크기
+        self.que = [None] * capacity  # 큐의 본체
+
+    def __len__(self) -> int:
+        """큐에 있는 모든 데이터 개수를 반환"""
+        return self.no
+
+    def is_empty(self) -> bool:
+        """큐가 비어 있는지 판단"""
+        return self.no <= 0
+
+    def is_full(self) -> bool:
+        """큐가 가득 찼는지 판단"""
+        return self.no >= self.capacity
+```
+
+- `enque()` 함수 : 큐에 데이터를 인큐
+
+```python
+# Do it! 실습 4-3 [B]
+    def enque(self, x: Any) -> None:
+        """데이터 x를 인큐"""
+        if self.is_full():
+            raise FixedQueue.Full  # 큐가 가득 찬 경우 예외처리를 발생
+        self.que[self.rear] = x
+        self.rear += 1
+        self.no += 1
+        if self.rear == self.capacity:
+            self.rear = 0
+```
+
+- `deque()` 함수 : 큐의 맨 앞부터 데이터를 디큐하여 그 값을 반환
+
+```python
+# Do it! 실습 4-3 [C]
+    def deque(self) -> Any:
+        """데이터를 디큐합니다"""
+        if self.is_empty():
+            raise FixedQueue.Empty  # 큐가 비어 있는 경우 예외처리를 발생
+        x = self.que[self.front]
+        self.front += 1
+        self.no -= 1
+        if self.front == self.capacity:
+            self.front = 0
+        return x
+```
+
+- `peek()` 함수 : 맨 앞 데이터, 다음 디큐에서 꺼낼 데이터를 들여다봄
+- `find()` 함수 : 큐의 배열에서 `value` 와 같은 데이터가 포함되어 있는 위치를 알아냄
+- `count()` 함수 : 큐에 있는 데이터의 개수를 구하여 반환
+- `__contains__()` 함수 : 큐에 데이터가 들어 있는지를 판단
+- `clear()` 함수 : 현재 큐에 들어 있는 모든 데이터 삭제
+- `dump()` 함수 : 큐에 들어 있는 모든 데이터를 맨 앞부터 맨 끝 쪽으로 순서대로 출력
+
+```python
+# Do it! 실습 4-3 [D]
+    def peek(self) -> Any:
+        """데이터를 피크합니다(맨 앞 데이터를 들여다 봄)"""
+        if self.is_empty():
+            raise FixedQueue.Empty  # 큐가 비어 있으면 예외처리를 발생
+        return self.que[self.front]
+
+    def find(self, value: Any) -> Any:
+        """큐에서 value를 찾아 인덱스를 반환하고 없으면 -1을 반환합니다"""
+        for i in range(self.no):
+            idx = (i + self.front) % self.capacity
+            if self.que[idx] == value:  # 검색 성공
+                return idx
+        return -1  # 검색 실패
+
+    def count(self, value: Any) -> bool:
+        """큐에 포함되어 있는 value의 개수를 반환합니다"""
+        c = 0
+        for i in range(self.no):  # 큐 데이터를 선형 검색
+            idx = (i + self.front) % self.capacity
+            if self.que[idx] == value:  # 검색 성공
+                c += 1  # 들어있음
+        return c
+
+    def __contains__(self, value: Any) -> bool:
+        """큐에 value가 포함되어 있는지 판단합니다"""
+        return self.count(value)
+
+    def clear(self) -> None:
+        """큐의 모든 데이터를 비웁니다"""
+        self.no = self.front = self.rear = 0
+
+    def dump(self) -> None:
+        """모든 데이터를 맨 앞에서 맨 끝 순서로 출력합니다"""
+        if self.is_empty():  # 큐가 비어 있으면 예외처리를 발생
+            print('큐가 비어 있습니다.')
+        else:
+            for i in range(self.no):
+                print(self.que[(i + self.front) % self.capacity], end=' ')
+            print()
+```
+
+## 4. 링 버퍼를 활용한 큐 알고리즘 코드
+
+```python
+# [Do it! 실습 4-4] 고정 길이 큐 클래스(FixedQueue)를 사용하기
+
+from enum import Enum
+from fixed_queue import FixedQueue
+
+Menu = Enum('Menu', ['인큐', '디큐', '피크', '검색', '덤프', '종료'])
+
+def select_menu() -> Menu:
+    """메뉴 선택"""
+    s = [f'({m.value}){m.name}' for m in Menu]
+    while True:
+        print(*s, sep='   ', end='')
+        n = int(input(': '))
+        if 1 <= n <= len(Menu):
+            return Menu(n)
+
+q = FixedQueue(64)  # 최대 64개를 인큐할 수 있는 큐 생성(고정 길이)
+
+while True:
+    print(f'현재 데이터 개수: {len(q)} / {q.capacity}')
+    menu = select_menu()   # 메뉴 선택
+
+    if menu == Menu.인큐:  # 인큐
+        x = int(input('인큐할 데이터를 입력하세요.: '))
+        try:
+            q.enque(x)
+        except FixedQueue.Full:
+            print('큐가 가득 찼습니다.')
+
+    elif menu == Menu.디큐:  # 디큐
+        try:
+            x = q.deque()
+            print(f'디큐한 데이터는 {x}입니다.')
+        except FixedQueue.Empty:
+            print('큐가 비어 있습니다.')
+
+    elif menu == Menu.피크:  # 피크
+        try:
+            x = q.peek()
+            print(f'피크한 데이터는 {x}입니다.')
+        except FixedQueue.Empty:
+            print('큐가 비었습니다.')
+
+    elif menu == Menu.검색:  # 검색
+        x = int(input('검색할 값을 입력하세요.: '))
+        if x in q:
+            print(f'{q.count(x)}개 포함되고, 맨 앞의 위치는 {q.find(x)}입니다.')
+        else:
+            print('검색값을 찾을 수 없습니다.')
+
+    elif menu == Menu.덤프:  # 덤프
+        q.dump()
+    else:
+        break
+```
