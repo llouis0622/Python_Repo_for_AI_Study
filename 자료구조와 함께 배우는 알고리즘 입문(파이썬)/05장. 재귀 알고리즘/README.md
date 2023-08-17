@@ -153,3 +153,166 @@ x = int(input('정수값을 입력하세요.: '))
 
 recur(x)
 ```
+
+# 3. 하노이의 탑
+
+## 1. 하노이의 탑(Towers of Hanoi) 알아보기
+
+- 작은 원반이 위에, 큰 원반이 아래에 위치하는 규칙을 지키면서 기둥 3개를 이용해서 원반을 옮기는 문제
+
+```python
+# [Do it! 실습 5-6] 하노이의 탑 구현하기
+
+def move(no: int, x: int, y: int) -> None:
+    """원반을 no개를 x 기둥에서 y 기둥으로 옮김"""
+    if no > 1:
+        move(no - 1, x, 6 - x - y)
+
+    print(f'원반 [{no}]을(를) {x}기둥에서 {y}기둥으로 옮깁니다.')
+
+    if no > 1:
+        move(no - 1, 6 - x - y, y)
+
+print('하노이의 탑을 구현하는 프로그램입니다.')
+n = int(input('원반의 개수를 입력하세요.: '))
+
+move(n, 1, 3)
+```
+
+# 4. 8퀸 문제
+
+## 1. 8퀸 문제(8-Queen Problem) 알아보기
+
+- 8개의 퀸이 서로 공격하여 잡을 수 없도록 8 × 8 체스판에 배치하는 것
+
+## 2. 퀸 배치하기
+
+- 8개를 배치하는 조합 : 64 × 63 × 62 × 61 × 60 × 59 × 58 × 57 = 178,462,987,637,760
+- 각 열에 퀸을 1개만 배치 : 8 × 8 × 8 × 8 × 8 × 8 × 8 × 8 = 16,777,216
+- 각 행에 퀸을 1개만 배치
+
+## 3. 분기(Branching) 작업으로 문제 해결하기
+
+- 분기 작업 : 차례대로 가지가 뻗어 나가듯이 배치 조합을 열거하는 방법
+- 분할 정복법(Divide and Conquer) : 큰 문제를 작은 문제로 분할하고, 작은 문제 풀이법을 결합하여 전체 풀이법을 얻는 방법
+
+```python
+# [Do it! 실습 5-7] 각 열에 1개 퀸을 배치한 조합을 재귀적으로 나열하기
+
+pos = [0] * 8  # 각 열에서 퀸의 위치를 출력
+
+def put() -> None:
+    """각 열에 배치한 퀸의 위치를 출력"""
+    for i in range(8):
+        print(f'{pos[i]:2}', end='')
+    print()
+
+def set(i: int) -> None:
+    """i 열에 퀸을 배치"""
+    for j in range(8):
+        pos[i] = j   # 퀸을 j행에 배치
+        if i == 7 :  # 모든 열에 배치를 종료
+            put()
+        else:
+            set(i + 1)  # 다음 열에 퀸을 배치
+
+set(0)  # 0 열에 퀸을 배치
+```
+
+## 4. 한정(Bounding) 작업과 분기 한정법(Branching and Bounding Method)
+
+- 한정 작업 : 필요하지 않은 분기를 없애서 불필요한 조합을 열거하지 않는 방법
+- 분기 한정법 : 분기 작업과 한정 작업을 조합하여 문제를 풀이하는 방법
+
+```python
+# [Do it! 실습 5-8] 행과 열에 퀸을 1개 배치하는 조합을 재귀적으로 나열하기
+
+pos = [0] * 8       # 각 열에서 퀸의 위치
+flag = [False] * 8  # 각 행에 퀸을 배치했는지 체크
+
+def put() -> None:
+    """각 열에 놓은 퀸의 위치를 출력"""
+    for i in range(8):
+        print(f'{pos[i]:2}', end='')
+    print()
+
+def set(i: int) -> None:
+    """i 열의 알맞은 위치에 퀸을 배치"""
+    for j in range(8):
+        if not flag[j]:  # j 행에 퀸을 배치하지 않았으면
+            pos[i] = j   # 퀸을 j 행에 배치
+            if i == 7:   # 모든 열에 퀸을 배치를 완료
+                put()
+            else:
+                flag[j] = True
+                set(i + 1)  # 다음 열에 퀸을 배치
+                flag[j] = False
+
+set(0)  # 0열에 퀸을 배치
+```
+
+## 5. 8퀸 문제 해결 프로그램 만들기
+
+```python
+# [Do it! 실습 5-9] 8퀸 문제 알고리즘 구현하기
+
+pos = [0] * 8          # 각 열에 배치한 퀸의 위치
+flag_a = [False] * 8   # 각 행에 퀸을 배치했는지 체크
+flag_b = [False] * 15  # 대각선 방향(↙↗)으로 퀸을 배치했는지 체크
+flag_c = [False] * 15  # 대각선 방향( ↘↖)으로 퀸을 배치했는지 체크
+
+def put() -> None:
+    """각 열에 배치한 퀸의 위치를 출력"""
+    for i in range(8):
+        print(f'{pos[i]:2}', end='')
+    print()
+
+def set(i: int) -> None:
+    """i 열의 알맞은 위치에 퀸을 배치"""
+    for j in range(8):
+        if(     not flag_a[j]            # j행에 퀸이 배치 되지 않았다면
+            and not flag_b[i + j]        # 대각선 방향(↙↗)으로 퀸이 배치 되지 않았다면
+            and not flag_c[i - j + 7]):  # 대각선 방향( ↘↖)으로 퀸이 배치 되지 않았다면
+            pos[i] = j  # 퀸을 j행에 배치
+            if i == 7:  # 모든 열에 퀸을 배치하는 것을 완료
+                put()
+            else:
+                flag_a[j] = flag_b[i + j] = flag_c[i - j + 7] = True
+                set(i + 1)  # 다음 열에 퀸을 배치
+                flag_a[j] = flag_b[i + j] = flag_c[i - j + 7] = False
+
+set(0)  # 0열에 퀸을 배치
+```
+
+```python
+# [Do it! 실습 5-9] 8퀸 문제 알고리즘 구현하기(퀸을 놓는 상황을 네모로 표시)
+
+pos = [0] * 8          # 각 열에 배치한 퀸의 위치
+flag_a = [False] * 8   # 각 행에 퀸을 배치했는지 체크
+flag_b = [False] * 15  # 대각선 방향(↙↗)으로 퀸을 배치했는지 체크
+flag_c = [False] * 15  # 대각선 방향( ↘↖)으로 퀸을 배치했는지 체크
+
+def put() -> None:
+    """퀸을 놓는 상황을 □와 ■로 출력"""
+    for j in range(8):
+        for i in range(8):
+            print('■' if pos[i] == j else '□', end='')
+        print()
+    print()
+
+def set(i: int) -> None:
+    """i 열의 알맞은 위치에 퀸을 놓기"""
+    for j in range(8):
+        if(     not flag_a[j]           # j 행에 아직 퀸을 놓지 않았으면
+            and not flag_b[i + j]       # 대각선 방향(↙↗)으로 퀸이 배치 되지 않았다면
+            and not flag_c[i - j + 7]): # 대각선 방향( ↘↖)으로 퀸이 배치 되지 않았다면
+            pos[i] = j          # 퀸을 j 행에 놓기
+            if i == 7:          # 모든 열에 퀸을 배치하는 것을 완료
+                put()
+            else:
+                flag_a[j] = flag_b[i + j] = flag_c[i - j + 7] = True
+                set(i + 1)      # 다음 열에 퀸을 놓기
+                flag_a[j] = flag_b[i + j] = flag_c[i - j + 7] = False
+
+set(0)          # 0 열에 퀸을 놓기
+```
