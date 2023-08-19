@@ -419,3 +419,181 @@ if __name__ == '__main__':
     for i in range(num):
         print(f'x[{i}] = {x[i]}')
 ```
+
+# 4. 단순 삽입 정렬(Straight Insertion Sort)
+
+- 주목한 원소보다 더 앞쪽에서 알맞은 위치로 삽입하며 정렬하는 알고리즘
+
+## 1. 단순 삽입 정렬 알아보기
+
+- 아직 정렬되지 않은 부분의 맨 앞 원소를 정렬된 부분의 알맞은 위치에 삽입
+- 종료 조건 1 : 정렬된 배열의 왼쪽 끝에 도달한 경우
+- 종료 조건 2 : `tmp` 보다 작거나 키값이 같은 원소 `a[j - 1]` 을 발견할 경우
+- 계속 조건 1 : `j` 가 0보다 큰 경우
+- 계속 조건 2 : `a[j - 1]` 의 값이 `tmp` 보다 큰 경우
+
+```python
+# [Do it! 실습 6-7] 단순 삽입 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def insertion_sort(a: MutableSequence) -> None:
+    """단순 삽입 정렬"""
+    n = len(a)
+    for i in range(1, n):
+        j = i
+        tmp = a[i]
+        while j > 0 and a[j - 1] > tmp:
+            a[j] = a[j - 1]
+            j -= 1
+        a[j] = tmp
+
+if __name__ == '__main__':
+    print('단순 삽입 정렬을 수행합니다.')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num  # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    insertion_sort(x)  # 배열 x를 단순 삽입 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+## 2. 이진 삽입 정렬(Binary Insertion Sort)
+
+- 이진 검색법을 사용하여 삽입 정렬을 하는 것
+
+```python
+# [Do it! 실습 6C-1] 이진 삽입 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def binary_insertion_sort(a: MutableSequence) -> None:
+    """이진 삽입 정렬"""
+    n = len(a)
+    for i in range(1, n):
+        key = a[i]
+        pl = 0      # 검색 범위의 맨 앞 원소 인덱스
+        pr = i - 1  # 검색 범위의 맨 끝 원소 인덱스
+
+        while True:
+            pc = (pl + pr) // 2  # 검색 범위의 중앙 원소 인덱스
+            if a[pc] == key:     # 검색 성공
+                break
+            elif a[pc] < key:
+                pl = pc + 1
+            else:
+                pr = pc - 1
+            if pl > pr:
+                break
+    
+        pd = pc + 1 if pl <= pr else pr + 1  # 삽입할 위치의 인덱스
+
+        for j in range(i, pd, -1):
+            a[j] = a[j - 1]
+        a[pd] = key
+
+if __name__ == "__main__":
+    print("이진 삽입 정렬을 수행합니다.")
+    num = int(input("원소 수를 입력하세요.: "))
+    x = [None] * num          # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f"x[{i}]: "))
+
+    binary_insertion_sort(x)  # 배열 x를 이진 삽입 정렬
+
+    print("오름차순으로 정렬했습니다.")
+    for i in range(num):
+        print(f"x[{i}] = {x[i]}")
+```
+
+# 5. 셸 정렬(Shell Sort)
+
+- 단순 삽입 정렬의 장점은 살리고 단점은 보완하여 더 빠르게 정렬하는 알고리즘
+
+## 1. 단순 삽입 정렬의 문제
+
+- 장점 : 이미 정렬을 마쳤거나 정렬이 거의 끝나가는 상태에서는 속도가 아주 빠름
+- 단점 : 삽입할 위치가 멀리 떨어져 있으면 이동 횟수가 증가
+
+## 2. 셸 정렬 알아보기
+
+- 정렬할 배열의 원소를 그룹으로 나눠 각 그룹별로 정렬 수행
+- 정렬된 그룹을 합치는 작업을 반복하여 원소의 이동 횟수를 줄임
+
+```python
+# [Do it! 실습 6-8] 셸 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def shell_sort(a: MutableSequence) -> None:
+    """셸 정렬"""
+    n = len(a)
+    h = n // 2
+    while h > 0:
+        for i in range(h, n):
+            j = i - h
+            tmp = a[i]
+            while j >= 0 and a[j] > tmp:
+                a[j + h] = a[j]
+                j -= h
+            a[j + h] = tmp
+        h //= 2
+
+if __name__ == '__main__':
+    print('셸 정렬을 수행합니다.')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num  # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    shell_sort(x)  # 배열 x를 셸 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+```python
+# [Do it! 실습 6-9] 셸 정렬 알고리즘 구현하기(h * 3 + 1의 수열 사용)
+
+from typing import MutableSequence
+
+def shell_sort(a: MutableSequence) -> None:
+    """셸 정렬(h * 3 + 1의 수열 사용)"""
+    n = len(a)
+    h = 1
+
+    while h < n // 9:
+        h = h * 3 + 1
+
+    while h > 0:
+        for i in range(h, n):
+            j = i - h
+            tmp = a[i]
+            while j >= 0 and a[j] > tmp:
+                a[j + h] = a[j]
+                j -= h
+            a[j + h] = tmp
+        h //= 3
+
+if __name__ == '__main__':
+    print('셸 정렬을 수행합니다(h * 3 + 1의 수열 사용).')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num  # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    shell_sort(x)  # 배열 x를 셸 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
