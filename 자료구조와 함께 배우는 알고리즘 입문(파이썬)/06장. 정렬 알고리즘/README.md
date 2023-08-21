@@ -597,3 +597,445 @@ if __name__ == '__main__':
     for i in range(num):
         print(f'x[{i}] = {x[i]}')
 ```
+
+# 6. 퀵 정렬(Quick Sort)
+
+- 일반적으로 사용되는 아주 빠른 정렬 알고리즘
+
+## 1. 퀵 정렬 알아보기
+
+- 피벗(Pivot) : 그룹을 나누는 기준, 중심축
+
+## 2. 배열을 두 그룹으로 나누기
+
+- `a[pl] >= x` 가 성립하는 원소를 찾을 때까지 `pl` 을 오른쪽 방향으로 스캔
+- `a[pr] <= x` 가 성립하는 원소를 찾을 때까지 `pr` 을 왼쪽 방향으로 스캔
+- 피벗 이하인 그룹 : `a[0], ..., a[pl - 1`
+- 피벗 이상인 그룹 : `a[pr + 1], ..., a[pl - 1]`
+- 피벗과 일치하는 그룹 : `a[pr + 1, ..., a[pl - 1]`
+
+```python
+# [Do it! 실습 6-10] 배열을 두 그룹으로 나누기
+
+from typing import MutableSequence
+
+def partition(a: MutableSequence) -> None:
+    """배열을 분할하여 출력"""
+    n = len(a)
+    pl = 0         # 왼쪽 커서
+    pr = n - 1     # 오른쪽 커서
+    x = a[n // 2]  # 피벗(가운데 원소)
+
+    while pl <= pr:
+        while a[pl] < x: pl += 1
+        while a[pr] > x: pr -= 1
+        if pl <= pr:
+            a[pl], a[pr] = a[pr], a[pl]
+            pl += 1
+            pr -= 1
+
+    print(f'피벗은 {x}입니다.')
+
+    print('피벗 이하인 그룹입니다.')
+    print(*a[0 : pl])           # a[0] ~ a[pl - 1]
+
+    if pl > pr + 1:
+        print('피벗과 일치하는 그룹입니다.')
+        print(*a[pr + 1 : pl])  # a[pr + 1] ~ a[pl - 1]
+
+    print('피벗 이상인 그룹입니다.')
+    print(*a[pr + 1 : n])       # a[pr + 1] ~ a[n - 1]
+
+if __name__ == '__main__':
+    print('배열을 나눕니다.')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    partition(x)         # 배열 x를 나누어서 출력
+```
+
+## 3. 퀵 정렬 만들기
+
+- 중앙값을 기준으로 피벗 만들기
+
+```python
+# [Do it! 실습 6-10] 퀵 정렬 알고리즘 구현
+
+from typing import MutableSequence
+
+def qsort(a: MutableSequence, left: int, right: int) -> None:
+    """a[left] ~ a[right]를 퀵 정렬"""
+    pl = left                   # 왼쪽 커서
+    pr = right                  # 오른쪽 커서
+    x = a[(left + right) // 2]  # 피벗(가운데 요소)
+
+    while pl <= pr:    # 실습 6-10과 같은 while 문
+        while a[pl] < x: pl += 1
+        while a[pr] > x: pr -= 1
+        if pl <= pr:
+            a[pl], a[pr] = a[pr], a[pl]
+            pl += 1
+            pr -= 1
+
+    if left < pr: qsort(a, left, pr)
+    if pl < right: qsort(a, pl, right)
+
+def quick_sort(a: MutableSequence) -> None:
+    """퀵 정렬"""
+    qsort(a, 0, len(a) - 1)
+
+if __name__ == '__main__':
+    print('퀵 정렬을 수행합니다.')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num   # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    quick_sort(x)      # 배열 x를 퀵 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+```python
+# [Do it! 실습 6C-3] 퀵 정렬 알고리즘 구현(배열을 나누는 과정 출력)
+
+from typing import MutableSequence
+
+def qsort(a: MutableSequence, left: int, right: int) -> None:
+    """a[left] ~ a[right]를 퀵 정렬(배열을 나누는 과정 출력)"""
+    pl = left                   # 왼쪽 커서
+    pr = right                  # 오른쪽 커서
+    x = a[(left + right) // 2]  # 피벗(가운데 원소)
+
+    print(f'a[{left}] ~ a[{right}]: ', *a[left : right + 1])  # 새로 추가된 부분
+
+    while pl <= pr:                     
+        while a[pl] < x: pl += 1
+        while a[pr] > x: pr -= 1
+        if pl <= pr:                    
+            a[pl], a[pr] = a[pr], a[pl]
+            pl += 1
+            pr -= 1
+
+    if left < pr: qsort(a, left, pr)   
+    if pl < right: qsort(a, pl, right)
+
+def quick_sort(a: MutableSequence) -> None:
+    """퀵 정렬"""
+    qsort(a, 0, len(a) - 1)
+
+if __name__ == '__main__':
+    print('퀵 정렬을 수행합니다(배열을 나누는 과정 출력).')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    quick_sort(x)       # 배열 x를 퀵 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+## 4. 비재귀적인 퀵 정렬 만들기
+
+- 데이터를 임시 저장하기 위해 스택 사용
+- `range` : 나눌 범위에서 맨 앞 원소의 인덱스와 맨 끝 원소의 인덱스를 조합한 튜플 스택
+
+```python
+# [Do it! 실습 6-12] 퀵 정렬 알고리즘 구현(비재귀적인 퀵 정렬)
+
+from stack import Stack  # 실습 4C-1의 파일 import
+from typing import MutableSequence
+
+def qsort(a: MutableSequence, left: int, right: int) -> None:
+    """a[left] ~ a [right]를 퀵 정렬(비재귀 버전)"""
+    range = Stack(right - left + 1)  # 스택 생성
+
+    range.push((left, right))
+
+    while not range.is_empty():
+        pl, pr = left, right = range.pop()  # 왼쪽, 오른쪽 커서를 꺼냄
+        x = a[(left + right) // 2]          # 피벗(중앙 요소)
+
+        while pl <= pr:
+            while a[pl] < x: pl += 1
+            while a[pr] > x: pr -= 1
+            if pl <= pr:                        # 실습 6-10, 실습 6-11과 같음
+                a[pl], a[pr] = a[pr], a[pl]
+                pl += 1
+                pr -= 1
+
+        if left < pr: range.push((left, pr))    # 왼쪽 그룹의 커서를 저장
+        if pl < right: range.push((pl, right))  # 오른쪽 그룹의 커서를 저장
+
+def quick_sort(a: MutableSequence) -> None:
+    """퀵 정렬"""
+    qsort(a, 0, len(a) - 1)
+
+if __name__ == '__main__':
+    print('비재귀적인 퀵 정렬')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    quick_sort(x)       # 배열 x를 퀵 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+- 스택의 크기 : 정렬 대상인 배열의 원소 수와 같은 값
+- 규칙 1 : 원소 수가 많은 쪽의 그룹을 먼저 푸시
+- 규칙 2 : 원소 수가 적은 쪽의 그룹을 먼저 푸시
+
+## 5. 피벗 선택하기
+
+- 방법 1 : 나누어야 할 배열의 원소 수가 3 이상이면, 배열에서 임의의 원소 3개를 꺼내 중앙값인 원소를 피벗으로 선택
+- 방법 2 : 나누어야 할 배열의 맨 앞 원소, 가운데 원소, 맨 끝 원소를 정렬한 뒤 가운데 원소와 맨 끝에서 두 번째 원소를 교환, 맨 끝에서 두 번째 원소값 `a[right - 1]` 이 피벗으로 선택, 그 동시에 나눌 대상을 `a[left + 1] ~ a[right - 2]` 로 좁힘
+- 왼쪽 커서 `pl` 의 시작 위치 : `left -> left + 1`
+- 오른쪽 커서 `pr` 의 시작 위치 : `right -> right - 2`
+
+## 6. 퀵 정렬의 시간 복잡도
+
+- `O(n log n)`
+- 최악의 경우 시간 복잡도 : `O(n^2)`
+- 원소 수가 9개 미만인 경우 단순 삽입 정렬로 전환
+- 피벗 선택은 방법 2를 채택
+
+```python
+# [Do it! 실습 6-13] 퀵 정렬 알고리즘 구현하기(원소 수가 9개 미만인 경우 단순 삽입 정렬)
+
+from typing import MutableSequence
+
+def sort3(a: MutableSequence, idx1: int, idx2: int, idx3: int):
+    """a[idx1], a[idx2], a[idx3]을 오름차순으로 정렬하고 가운데 값의 인덱스를 반환"""
+    if a[idx2] < a[idx1]: a[idx2], a[idx1] = a[idx1], a[idx2]
+    if a[idx3] < a[idx2]: a[idx3], a[idx2] = a[idx2], a[idx3]
+    if a[idx2] < a[idx1]: a[idx2], a[idx1] = a[idx1], a[idx2]
+    return idx2
+
+def insertion_sort(a: MutableSequence, left: int, right: int) -> None:
+    """a[left] ~ a[right]를 단순 삽입 정렬"""
+    for i in range(left + 1, right + 1):
+        j = i
+        tmp = a[i]
+        while j > 0 and a[j - 1] > tmp:
+            a[j] = a[j - 1]
+            j -= 1
+        a[j] = tmp
+
+def qsort(a: MutableSequence, left: int, right: int) -> None:
+    """a[left] ~ a[right]를 퀵 정렬"""
+    if right - left < 9:            # 원소 수가 9개 미만이면 단순 삽입 정렬을 호출
+        insertion_sort(a, left, right)
+    else:                           # 원소 수가 9개 이상이면 퀵 정렬을 수행
+        pl = left                   # 왼쪽 커서
+        pr = right                  # 오른쪽 커서
+        m = sort3(a, pl, (pl + pr) // 2, pr)
+        x = a[m]
+
+        a[m], a[pr - 1] = a[pr - 1], a[m]
+        pl += 1
+        pr -= 2
+        while pl <= pr:
+            while a[pl] < x: pl += 1
+            while a[pr] > x: pr -= 1
+            if pl <= pr:
+                a[pl], a[pr] = a[pr], a[pl]
+                pl += 1
+                pr -= 1
+
+        if left < pr: qsort(a, left, pr)
+        if pl < right: qsort(a, pl, right)
+
+def quick_sort(a: MutableSequence) -> None:
+    """퀵 정렬"""
+    qsort(a, 0, len(a) - 1)
+
+if __name__ == '__main__':
+    print('퀵 정렬을 합니다(원소 수가 9개 미만이면 단순 삽입 정렬).')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    quick_sort(x)       # 배열 x를 퀵 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+## 7. `sorted()` 함수로 정렬하기
+
+- 전달받은 이터러블 객체의 원소를 정렬하여 list형으로 반환
+
+```python
+# [Do it! 실습 6C-4] sorted() 함수를 사용하여 정렬하기
+
+print('sorted() 함수를 사용하여 정렬합니다.')
+num = int(input('원소 수를 입력하세요.: '))
+x = [None] * num    # 원소 수가 num인 배열을 생성
+
+for i in range(num):
+    x[i] = int(input(f'x[{i}]: '))
+
+# 배열 x를 오름차순으로 정렬
+x = sorted(x)
+print('오름차순으로 정렬했습니다.')
+for i in range(num):
+    print(f'x[{i}] = {x[i]}')
+
+# 배열 x를 내림차순으로 정렬
+x = sorted(x, reverse = True)
+print('내림차순으로 정렬했습니다.')
+for i in range(num):
+    print(f'x[{i}] = {x[i]}')
+```
+
+- 튜플 정렬
+    - 1단계 : `sorted()` 함수로 정렬한 원소의 나열에서 새로운 리스트 생성
+    - 2단계 : 생성한 리스트를 튜플로 변환
+
+# 7. 병합 정렬(Merge Sort)
+
+- 배열을 앞 부분과 뒷 부분의 두 그룹으로 나누어 각각 정렬한 후 병합하는 작업을 반복하는 알고리즘
+
+## 1. 정렬을 마친 배열의 병합
+
+```python
+# [Do it! 실습 6-14] 정렬을 마친 두 배열을 병합하기
+
+from typing import Sequence, MutableSequence
+
+def merge_sorted_list(a: Sequence, b: Sequence, c: MutableSequence) -> None:
+    """정렬을 마친 배열 a와 b를 병합하여 c에 저장"""
+    pa, pb, pc = 0, 0, 0                 # 각 배열의 커서
+    na, nb, nc = len(a), len(b), len(c)  # 각 배열의 원소수 
+
+    while pa < na and pb < nb:  # pa와 pb를 비교하여 작은 값을 pc에 저장
+        if a[pa] <= b[pb]:
+            c[pc] = a[pa]
+            pa += 1
+        else:
+            c[pc] = b[pb]
+            pb += 1
+        pc += 1
+
+    while pa < na:              # a에 남은 원소를 복사
+        c[pc] = a[pa]
+        pa += 1
+        pc += 1
+
+    while pb < nb:              # b에 남은 원소를 복사
+        c[pc] = b[pb]
+        pb += 1
+        pc += 1
+
+if __name__ == '__main__':
+    a = [2, 4, 6, 8, 11, 13]
+    b = [1, 2, 3, 4, 9, 16, 21]
+    c = [None] * (len(a) + len(b))
+    print('정렬을 마친 두 배열의 병합을 수행합니다.')
+
+    merge_sorted_list(a, b, c)  # 배열 a와 b를 병합하여 c에 저장
+
+    print('배열 a와 b를 병합하여 배열 c에 저장하였습니다.')
+    print(f'배열 a: {a}')
+    print(f'배열 b: {b}')
+    print(f'배열 c: {c}')
+```
+
+## 2. `sorted()` 함수로 병합 정렬하기
+
+```python
+# 정렬을 마친 두 배열의 병합 (heapq.merege 사용）
+
+import heapq
+
+a = [2, 1, 6, 8, 11, 13]
+b = [1, 2, 3, 4, 9, 16, 21]
+c = list(heapq.merge(a, b))  # 배열 a와 b를 병합하여 c에 저장
+
+print('배열 a와 b를 병합하여 배열 c에 저장하였습니다.')
+print(f'배열 a: {a}')
+print(f'배열 b: {b}')
+print(f'배열 c: {c}')
+```
+
+## 3. 병합 정렬 만들기
+
+- 배열의 앞 부분을 병합 정렬로 정렬
+- 배열의 뒷 부분을 병합 정렬로 정렬
+- 배열의 앞 부분과 뒷 부분을 병합
+
+```python
+# [Do it! 실습 6-15] 병합 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def merge_sort(a: MutableSequence) -> None:
+    """병합 정렬"""
+
+    def _merge_sort(a: MutableSequence, left: int, right: int) -> None:
+        """a[left] ~ a[right]를 재귀적으로 병합 정렬"""
+        if left < right:
+            center = (left + right) // 2
+
+            _merge_sort(a, left, center)            # 배열 앞부분을 병합 정렬
+            _merge_sort(a, center + 1, right)       # 배열 뒷부분을 병합 정렬
+
+            p = j = 0
+            i = k = left
+
+            while i <= center:
+                 buff[p] = a[i]
+                 p += 1
+                 i += 1
+
+            while i <= right and j < p:
+                 if buff[j] <= a[i]:
+                     a[k] = buff[j]
+                     j += 1
+                 else:
+                     a[k] = a[i]
+                     i += 1
+                 k += 1
+
+            while j < p:
+                a[k] = buff[j]
+                k += 1
+                j += 1
+
+    n = len(a)
+    buff = [None] * n           # 작업용 배열을 생성
+    _merge_sort(a, 0, n - 1)    # 배열 전체를 병합 정렬
+    del buff                    # 작업용 배열을 소멸
+
+if __name__ == '__main__':
+    print('병합 정렬을 수행합니다')
+    num = int(input('원소 수를 입력하세요.: '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}]: '))
+
+    merge_sort(x)       # 배열 x를 병합 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
