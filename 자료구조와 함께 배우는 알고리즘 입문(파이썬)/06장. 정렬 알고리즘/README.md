@@ -1039,3 +1039,177 @@ if __name__ == '__main__':
     for i in range(num):
         print(f'x[{i}] = {x[i]}')
 ```
+
+# 8. 힙 정렬(Heap Sort)
+
+- 힙의 특성을 이용하여 정렬하는 알고리즘
+
+## 1. 힙 정렬 알아보기
+
+- 힙 : 부모의 값이 자식의 값보다 항상 크거나 작다는 조건을 만족하는 완전 이진 트리
+- 부분 순서 트리(Partial Ordered Tree) : 형제의 대소 관계가 정해져 있지 않음
+- 부모 : `a[(i - 1) // 2]`
+- 왼쪽 자식 : `a[i * 2 + 1]`
+- 오른쪽 자식 : `a[i * 2 + 2]`
+
+## 2. 힙 정렬의 특징
+
+- 힙에서 최댓값은 루트에 위치함
+- 힙에서 최댓값인 루트를 꺼냄
+- 루트 이외의 부분을 힙으로 만듦
+
+## 3. 루트를 삭제한 힙의 재구성
+
+1. 루트를 꺼냄
+2. 마지막 원소를 루트로 이동
+3. 루트에서 시작하여 자신보다 값이 큰 자식과 자리를 바꾸고 아래쪽으로 내려가는 작업을 반복, 자식의 값이 작거나 리프의 위치에 도달하면 종료
+
+## 4. 힙 정렬 알고리즘 알아보기
+
+1. `i` 값을 `n - 1` 로 초기화
+2. `a[0]` 과 `a[i]` 를 교환
+3. `a[0], a[1], ..., a[i - 1]` 을 힙으로 만듦
+4. `i` 값을 1씩 감소시켜 0이 되면 종료, 그렇지 않으면 2로 돌아감
+
+## 5. 배열을 힙으로 만들기
+
+```python
+# [Do it! 실습 6-16] 힙 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def heap_sort(a: MutableSequence) -> None:
+    """힙 정렬"""
+
+    def down_heap(a: MutableSequence, left: int, right: int) -> None:
+        """a[left] ~ a[right]를 힙으로 만들기"""
+        temp = a[left]      # 루트
+
+        parent = left
+        while parent < (right + 1) // 2:
+            cl = parent * 2 + 1     # 왼쪽 자식
+            cr = cl + 1             # 오른쪽 자식
+            child = cr if cr <= right and a[cr] > a[cl] else cl  # 큰 값을 선택합니다.
+            if temp >= a[child]:
+                break
+            a[parent] = a[child]
+            parent = child
+        a[parent] = temp
+
+    n = len(a)
+
+    for i in range((n - 1) // 2, -1, -1):   # a[i] ~ a[n-1]을 힙으로 만들기
+        down_heap(a, i, n - 1)
+
+    for i in range(n - 1, 0, -1):
+        a[0], a[i] = a[i], a[0]     # 최댓값인 a[0]과 마지막 원소 a[i]를 교환
+        down_heap(a, 0, i - 1)      # a[0] ~ a[i-1]을 힙으로 만들기
+
+if __name__ == '__main__':
+    print('힙 정렬을 수행합니다.')
+    num = int(input('원소 수를 입력하세요. : '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}] : '))
+
+    heap_sort(x)        # 배열 x를 힙 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+## 6. 힙 정렬의 시간 복잡도
+
+- `O(n log n)
+
+## 7. `heapq` 모듈을 사용하는 힙 정렬
+
+```python
+# [Do it! 실습 6C-5] 힙 정렬 알고리즘 구현하기(heapq.push와 heapq.pop를 사용）
+
+import heapq
+from typing import MutableSequence
+
+def heap_sort(a: MutableSequence) -> None:
+    """힙 정렬(heapq.push와 heapq.pop를 사용)"""
+
+    heap = []
+    for i in a:
+        heapq.heappush(heap, i)
+    for i in range(len(a)):
+        a[i] = heapq.heappop(heap)
+
+if __name__ == '__main__':
+    print('힙 정렬을 수행합니다(heapq.push와 heapq.pop를 사용).')
+    num = int(input('원소 수를 입력하세요. : '))
+    x = [None] * num    # 원소 수가 num인 배열을 생성
+
+    for i in range(num):
+        x[i] = int(input(f'x[{i}] : '))
+
+    heap_sort(x)        # 배열 x를 힙 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
+
+# 9. 도수 정렬(Counting Sort)
+
+- 원소의 대소 관계를 판단하지 않고 빠르게 정렬하는 알고리즘, 분포수 세기 정렬(Distribution Counting)
+
+## 1. 도수 정렬 알아보기
+
+- 도수 분포표 만들기 → 누적 도수 분포표 만들기
+- 작업용 배열 만들기
+- 배열 복사하기
+
+```python
+# 도수 분포표로 정렬
+for i in range(n - 1, -1, -1):
+    f[a[i]] -= 1
+    b[f[a[i]]] = a[i]
+
+# 정렬 완료 후
+for i in range(n):
+    a[i] = b[i]
+```
+
+```python
+# [Do it! 실습 6-17] 도수 정렬 알고리즘 구현하기
+
+from typing import MutableSequence
+
+def fsort(a: MutableSequence, max: int) -> None:
+    """도수 정렬(배열 원솟값은 0 이상 max 이하)"""
+    n = len(a)           # 정렬할 배열 a
+    f = [0] * (max + 1)  # 누적 도수 분포표 배열 f
+    b = [0] * n          # 작업용 배열 b
+
+    for i in range(n):              f[a[i]] += 1                     # [1단계]
+    for i in range(1, max + 1):     f[i] += f[i - 1]                 # [2단계]
+    for i in range(n - 1, -1, -1):  f[a[i]] -= 1; b[f[a[i]]] = a[i]  # [3단계]
+    for i in range(n):              a[i] = b[i]                      # [4단계]
+
+def counting_sort(a: MutableSequence) -> None:
+    """도수 정렬"""
+    fsort(a, max(a))
+
+if __name__ == '__main__':
+    print('도수 정렬을 합니다.')
+    num = int(input('원소 수를 입력하세요. : '))
+    x = [None] * num  # 원소 수가 num인 배열을 생성
+
+    for i in range(num):  # 양수만 입력받음
+        while True:
+            x[i] = int(input(f'x[{i}] : '))
+            if x[i] >= 0: break
+
+    counting_sort(x)  # 배열 x를 도수 정렬
+
+    print('오름차순으로 정렬했습니다.')
+    for i in range(num):
+        print(f'x[{i}] = {x[i]}')
+```
