@@ -121,3 +121,119 @@ $$
 - 출력 : 출력 형태, 활성 함수
 - 은닉 계층 : 활성 함수
 - 네트워크 크기 : 네트워크 깊이(계층 수), 네트워크 폭(계층별 뉴런 수)
+
+# 2. 분류와 회귀 문제
+
+## 1. 분류 문제
+
+- 분류(Classification) : 데이터의 클래스(Class) 또는 카테고리(Category)를 예측
+    - 이진 분류(Binary Classification) : 두 개 클래스로 분류
+    - 다중 분류(Multiclass Classification) : 여러 클래스로 분류
+    - 판별 함수(Discriminative Function) : 대상 판별, 입력 데이터가 속한 클래스 예측
+    - 확률 모델(Stochastic Model) : 입력 데이터가 각 클래스에 속할 확률 예측
+
+## 2. 회귀 문제
+
+- 회귀(Regression) : 여러 독립 변수와 종속 변수의 관계를 연속 함수 형태로 분석
+    - 예측값이 숫자형 데이터인 것
+    - 입력 데이터에 대한 함숫값 예측
+
+# 3. 이진 분류 문제
+
+## 1. 베르누이 분포(Bernoulli Distribution)
+
+$$
+p(x;\mu)=\mu^x(1-\mu)^{1-x},\ x\in\{0, 1\}
+$$
+
+## 2. 확률 모델 정의
+
+$$
+p(t_i \ | \ x_i;\ \theta)=\mathfrak{Bern}(t_i; \ \mu(x_i; \ \theta))
+\\ =\mu(x_i; \ \theta)^{t_i}(1-\mu(x_i; \ \theta))^{1-t_i}
+$$
+
+## 3. 출력 계층의 활성 함수
+
+- 점수(Score), 로짓(Logit)으로 예측 → 활성 함수를 통해 베르누이 확률분포의 파라미터 $\mu$로 변환
+
+### 1. 시그모이드 함수(Sigmoid)
+
+- 값을 $[0, 1]$ 범위로 만들어 줌
+- 스쿼싱(Squashing) 함수 : 값을 고정 범위로 변환
+
+$$
+\sigma(x)=\frac{1}{1+e^{-x}}
+$$
+
+![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/70c0041b-f85b-45f0-82dd-51714935c173/1.png)
+
+### 2. 로지스틱 함수의 역함수인 로짓 함수
+
+- 로그 오즈(Log Odds)
+    
+    $$
+    \text{logit}(p) = \log(\frac{p}{1-p})
+    $$
+    
+    $$
+    \text{logit}(p)=\text{logistic}^{-1}(p) = \log(\frac{p}{1-p})
+    \\ \text{logit}^{-1}(x)=\text{logistic}(x) =\frac{1}{1+e^{-x}}
+    $$
+    
+
+# 4. 다중 분류 모델
+
+## 1. 카테고리 분포(Categorial Distribution)
+
+- 여러 종류의 사건이 발생할 확률
+    
+    $$
+    p(x \ | \ \mu)=\prod_{k=1}^K\mu_k^{x_k}
+    $$
+    
+    $$
+    \mu=(\mu_1, \mu_2, ..., \mu_K)^T, \ \sum_{k=1}^K\mu_k=1
+    $$
+    
+    $$
+    x=(x_1, x_2, ..., x_K)^T, \ x_k=\begin{cases}1, \ k=i \\ 0, \ k \neq i \end{cases}, \ i \in \{1, 2, ..., K\}
+    $$
+    
+
+## 2. 확률 모델 정의
+
+$$
+p(x_i \ | \ x_i; \ \theta)=\text{Category}(t_i; \ \mu(x_i; \ \theta))=\prod_{k=1}^K\mu(x_i; \ \theta)_k^{t_{ik}}
+$$
+
+## 3. 출력 계층의 활성 함수
+
+### 1. 소프트맥스 함수(Softmax)
+
+- 실수 벡터를 확률 벡터로 변환
+- 값을 $[0, 1]$ 범위로 만들어 줌
+    
+    $$
+    \text{softmax}(y_i)=\frac{e^{y_i}}{\sum_{j=1}^Ke^{y_i}}
+    $$
+    
+    ![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/c8f06319-9caa-438f-981e-ebcc8ab3e871/1.jpg)
+    
+- 시그모이드를 여러 클래스에 대해 일반화한 함수
+    
+    $$
+    y=(y_1, y_2, ..., y_K)^T
+    $$
+    
+    $$
+    e^y=(e^{y_1}, e^{y_2}, ..., e^{y_K})^T
+    $$
+    
+    $$
+    \hat{e}^y=\frac{1}{\sum_{k=1}^Ke^{y_{k}}}(e^{y_1}, e^{y_2}, ..., e^{y_K})^T
+    $$
+    
+    $$
+    \sum_{k=1}^K\hat{e}^{y_{k}}=1
+    $$
