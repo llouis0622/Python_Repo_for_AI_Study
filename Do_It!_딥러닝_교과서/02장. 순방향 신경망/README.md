@@ -237,3 +237,42 @@ $$
     $$
     \sum_{k=1}^K\hat{e}^{y_{k}}=1
     $$
+
+# 5. 회귀 모델
+
+## 1. 가우시안 분포(Gaussian Distribution)
+
+- 평균을 중심으로 대칭적인 종 모양의 사건이 발생할 확률
+    
+    $$
+    \mathcal{N}(x\ | \ \mu, \ \sigma^2)=\frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/0b1732b4-32d3-414b-a671-dd2b8e2fcf03/1.png)
+    
+- 관측 데이터의 분포 근사
+
+## 2. 회귀 모델 정의
+
+$$
+t_i = y(x_i; \ \theta)+\epsilon, \ \epsilon \sim \mathcal{N}(\epsilon \ | \ 0, \ \beta^{-1})
+$$
+
+$$
+p(t_i \ | \ x_i; \ \theta)=\mathcal{N}(t_i \ | \ y(x_i; \ \theta), \ \beta^{-1})
+$$
+
+## 3. 출력 계층의 활성 함수
+
+- 항등 함수(Identity Function) : 입력값을 그대로 출력하는 함수
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/29e3b51f-e687-43ca-9eb1-bf3ab55f8917/1.png)
+    
+
+# 6. 입력 계층
+
+- 입력 데이터를 벡터 형태로 받아서 다음 계층에 전달하는 역할
+    
+    $$
+    x^T=(x_1, x_2, ..., x_n)
+    $$
