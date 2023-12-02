@@ -237,6 +237,7 @@ $$
     $$
     \sum_{k=1}^K\hat{e}^{y_{k}}=1
     $$
+    
 
 # 5. 회귀 모델
 
@@ -276,6 +277,7 @@ $$
     $$
     x^T=(x_1, x_2, ..., x_n)
     $$
+    
 
 # 7. 활성 함수
 
@@ -412,3 +414,89 @@ $$
     $$
     
     ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/f34bfe79-621c-4fa3-9882-0019ab0b924d/1.png)
+    
+
+# 8. 신경망 모델의 크기
+
+- 너비(Width)와 깊이(Depth)로 모델의 크기 정해짐
+    - 너비 : 계층별 뉴런 수
+    - 깊이 : 계층 수
+
+## 1. 모델 크기 탐색
+
+- 그리드 서치(Grid Search) : 파라미터별로 구간을 정해서 등간격으로 값을 샘플링하는 방법
+- 랜덤 서치(Random Search) : 여러 파라미터를 조합해서 랜덤하게 값을 샘플링하는 방법
+- NAS(Network Architecture Search) : 네트워크 구조 탐색 방법, 자동 모델 탐색 방법
+
+## 2. 모델 크기 조정
+
+- 성능이 검증된 기본 모델을 선택해서 새로운 문제에 맞게 모델의 크기를 조정하는 것
+- 이피션트넷(EfficientNet)에서 신경망의 너비, 깊이, 입력 이미지의 해상도를 고려하여 모델 크기 조정
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/0a38d181-a0b6-432a-9374-1cf321ca9947/1.png)
+    
+- 기본 모델의 너비 증가 → 성능 향상
+- 기본 모델의 깊이 증가 → 성능 향상
+- 기본 모델의 해상도 증가 → 성능 향상
+- 기본 모델의 너비 증가 + 기본 모델의 깊이 증가 + 기본 모델의 해상도 증가 → 성능 향상
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/33a86609-6cee-45de-b6d6-50da0a3bdc81/1.png)
+    
+
+# 9. 신경망 학습 관련 내용
+
+## 1. 시그모이드 함수와 크로스 엔트로피 손실
+
+$$
+J(\theta)=-\sum_{i=1}^Nt_i \ \cdot \ \log \mu(x_i; \ \theta)+(1-t_i) \ \cdot \ \log(1-\mu(x_i; \ \theta))
+$$
+
+$$
+J(\theta)=-\log(\mu(x; \ \theta))
+\\ =-\log(\sigma(x))
+\\ =-\log(\frac{1}{1+e^{-x}})
+\\ =\log(1+e^{-x})
+\\ =\text{softplus}(-x)
+$$
+
+- 소프트플러스(Softplus) 함수 : 부드러운 곡선 형태의 ReLU 함수
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/e222168e-151a-49be-bf6d-99e6281821f4/1.png)
+    
+    $$
+    \text{softplus}(x)=\log(1+e^x)
+    $$
+    
+
+## 2. 양수만 출력하는 활성 함수의 최적화 문제
+
+- 활성 함수의 출력이 항상 양수 → 학습 경로의 이동 방향이 크게 진동, 학습이 느려짐
+    
+    $$
+    \frac{\partial J}{\partial w} = \frac{\partial J}{\partial z} \ \cdot \frac{\partial z}{\partial w}
+    $$
+    
+    $$
+    \frac{\partial z}{\partial w} = x
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/3b5824d8-e5e3-4265-8b9a-8d58cf61db6d/1.png)
+    
+
+## 3. 죽은 ReLU가 발생하는 이유
+
+- 가중치 초기화를 잘 못했거나 학습률이 매우 클 때 발생
+    
+    $$
+    \frac{\partial J}{\partial w} = \frac{\partial J}{\partial z} \ \cdot \frac{\partial z}{\partial w}
+    $$
+    
+    $$
+    \frac{\partial z}{\partial w} = x
+    $$
+    
+- 가중치가 한 번 음수가 되면 다음 입력이 들어왔을 때 가중 합산이 음수가 되므로 ReLU는 0을 출력, ReLU의 그레이디언트가 0이 되어 학습이 더 진행되지 않고 계속해서 0을 출력하는 상태 유지
+
+## 4. 미분 불가능한 활성 함수
+
+- 신경망은 근사 방식으로 함수 표현 → 약간의 미분 오차를 허용해도 결과에 미치는 영향은 크지 않음
