@@ -276,3 +276,139 @@ $$
     $$
     x^T=(x_1, x_2, ..., x_n)
     $$
+
+# 7. 활성 함수
+
+- 시그모이드(Sigmoid) 계열 : S자형 곡선 형태
+    - 시그모이드(Sigmoid)
+    - 하이퍼볼릭 탄젠트(Tanh, Hyperbolic Tangent)
+    - 연산 속도 느림, 그레이디언트 소실 원인, 스쿼싱 기능
+- ReLU(Rectified Linear Unit) 계열 : 구간 선형 함수
+    - ReLU
+    - 리키 ReLU(Leaky ReLU)
+    - 맥스아웃(Maxout)
+    - ELU(Exponential Linear Unit)
+    - 선형성, 연산 속도 빠름, 학습 과정 안정적
+
+## 1. 계단 함수(Step Function)
+
+- 생체 뉴런의 발화 방식 모방
+- 모든 구간에서 미분값이 0
+    
+    $$
+    f(z)=\begin{cases} 1 \ \ \ \ \text{if} \ z≥ 0 \\ 0 \ \ \ \ \text{그 \ 외의 \ 경우} \end{cases}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/08af994c-3d69-4dc0-9253-968c08c92ce5/1.png)
+    
+
+## 2. 시그모이드 함수(Sigmoid Function)
+
+- 모든 구간에서 미분 가능, 증가 함수
+- 함수 정의에 지수 함수가 포함되어 있어서 연산 비용이 많이 듦
+- 그레이디언트 포화가 발생해서 학습이 중단될 수 있음
+    - 시그모이드 함수 끝부분에서 미분값이 0으로 포화되는 상태
+- 양수만 출력하므로 학습 경로가 진동하면서 학습 속도가 느려짐
+    
+    $$
+    f(x)=\frac{1}{1+e^{-x}}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/99dd0174-899c-49d7-aee8-1533b1704eb6/1.png)
+    
+
+## 3. 하이퍼볼릭 탄젠트 함수(Tanh, Hyperbolic Tangent Function)
+
+- 함수값이 $[-1, 1]$ 범위에 있는 S형 함수
+    
+    $$
+    f(x)=\frac{e^x-e^{-x}}{e^x+e^{-x}}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/57e0690c-eed1-4caa-a23d-4e81a2535dc1/1.png)
+    
+    $$
+    \tanh(x)=2\sigma(2x)-1
+    $$
+    
+- 함수 정의에 지수 함수가 포함되어 있어서 연산 비용이 많이 듦
+- 그레이디언트 포화가 발생해서 학습이 중단될 수 있음
+    
+    ![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/711746e3-d69f-475d-9840-97d90e0b7d80/1.jpg)
+    
+
+## 4. ReLU 함수(Rectified Linear Unit Function)
+
+- 0보다 큰 입력이 들어오면 그대로 통과시키고 0보다 작은 입력이 들어오면 0을 출력하는 함수
+    
+    $$
+    f(x)=\begin{cases} x & \text{if} \ x≥ 0 \\ 0 & \text{그 \ 외의 \ 경우} \end{cases}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/af9555a6-008c-4d0e-ba9a-7840a24f5d53/1.png)
+    
+
+### 1. ReLU는 왜 빠를까?
+
+- 추론이 빨라지는 이유 : 연산이 거의 없음
+- 학습이 빨라지는 이유 : 미분을 계산할 필요가 없음
+
+### 2. 죽은 ReLU(Dead ReLU)
+
+- 뉴런이 계속 0을 출력하는 상태
+- 양수만 출력, 학습 경로가 진동하면서 학습 속도 느려짐
+- 죽은 ReLU가 발생하면 학습이 진행되지 않음
+
+## 5. 릭키 ReLU, PReLU, ELU 함수
+
+- 릭키 ReLU(Leaky ReLU) : 음수 구간이 0이 되지 않도록 약간의 기울기가 있는 것
+    - 기울기 고정 → 최적의 성능 불가능
+    
+    $$
+    f(x)=\begin{cases} x & \text{if} \ x≥ 0 \\ 0.001x & \text{그 \ 외의 \ 경우} \end{cases}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/9ad2d95b-9b42-4a58-9b47-57bf70c13e75/1.png)
+    
+- PReLU(Parametic ReLU) : 뉴런별로 기울기를 학습
+- ELU(Exponential Linear Units) : 음수 구간이 $\alpha(e^x-1)$ 와 같이 지수 함수 형태로 정의
+    
+    $$
+    f(x)=\begin{cases} x & \text{if} \ x > 0 \\ \alpha(e^x-1) & \text{그 \ 외의 \ 경우} \end{cases}
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/6580c3c4-b679-46f6-8189-54ae6bc68d4e/1.png)
+    
+
+## 6. 맥스아웃 함수(Maxout Function)
+
+- 활성 함수를 구간 선형 함수(Piecewise Linear Function)로 가정, 각 뉴런에 최적화된 활성 함수를 학습을 통해 찾아냄
+    
+    $$
+    f(x)=\max(w_i^Tx + b_i), \ i=1, 2, ..., k
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/4837e06b-2340-442e-aeb3-9285cfc4bf27/1.png)
+    
+
+### 1. 맥스아웃 유닛(Maxout Unit) 구조
+
+- 맥스아웃 활성 함수를 학습하기 위해 뉴런을 확장한 구조
+- 선형 함수를 학습하는 선형 노드(Linear Node) + 최댓값을 출력하는 노드
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/40759d01-0a7b-4d8f-82fa-e863fac9ef4f/1.png)
+    
+
+### 2. 볼록 함수 근사 능력
+
+- 선형 노드의 개수에 따라 다른 형태의 볼록 함수(Convex Function) 근사 가능
+
+## 7. Swish 함수 = SiLU(Sigmoid Linear Unit)
+
+- ReLU와 ELU와 비슷한 모양, 원점 근처의 음수 구간에서 잠시 볼록 튀어나왔다가 다시 0으로 포화
+    
+    $$
+    f(x) = x \ \cdot \ \sigma(x)
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/f34bfe79-621c-4fa3-9882-0019ab0b924d/1.png)
