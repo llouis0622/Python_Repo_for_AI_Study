@@ -64,3 +64,106 @@ $$
 ## 3. 최적화를 통한 신경망 학습
 
 - 최적화 : 손실 함수의 최소 지점을 찾아가는 과정
+
+# 3. 경사 하강법
+
+## 1. 신경망의 학습 목표
+
+- 전역 최소(Global Minimum) : 함수 전체에서 가장 낮은 곳, 최소
+- 지역 최소(Local Minimum) : 함수에서 부분적으로 낮은 곳, 극소
+    
+    ![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/ec85fff8-a4ff-40d1-bbb9-06a271735ae4/1.jpg)
+    
+- 최적화 알고리즘의 목표 : 지역 최소를 찾는 것
+
+## 2. 신경망 학습을 위한 최적화 알고리즘
+
+- 1차 미분 : 상대적 수렴 속도 느림, 곡면이 매우 복잡해도 사용 가능
+    - 경사 하강법
+    - 경사 하강법의 변형 알고리즘 : SGD, SGD 모멘텀, AdaGrad, RMSProp, Adam
+- 1.5차 미분 : 1차 미분 → 2차 미분 근사, 메모리 사용량 많음
+    - 준 뉴턴 방법(Quasi-Newton Method)
+    - 켤레 경사 하강법(Conjugate Gradient Descent)
+    - 레번버그-마쿼트 방법(Levenberg-Marquardt Method)
+- 2차 미분 : 곡률 사용 → 최적해를 빠르게 찾을 수 있음, 계산 비용, 메모리 사용량 많음
+    - 뉴턴 방법(Newton Method)
+    - 내부점법(Interior Point Method)
+
+## 3. 경사 하강법(Gradient Descent)
+
+- 손실 함수의 최소 지점을 찾기 위해 경사가 가장 가파른 곳을 찾아서 한 걸음씩 내려가는 방법
+- 손실 함수의 기울기를 구하고 기울기의 반대 방향으로 내려감
+    
+    $$
+    \theta^+ = \theta-\alpha\frac{\partial J}{\partial \theta}
+    $$
+    
+- 신경망 모델의 파라미터 $\theta$
+- 스텝 크기(Step Size) = 학습률(Learning Rate) $\alpha$ : 이동 폭 결정
+- 이동 방향 $-\frac{\partial J}{\partial \theta}$ : 기울기의 음수 방향, 현재 지점에서 가장 가파른 내리막길로 내려감
+
+## 4. 신경망에 경사 하강법 적용
+
+### 1. 2계층 신경망 회귀 모델
+
+![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/1e28f66c-96ff-4377-9be2-76ff85fa180a/1.png)
+
+$$
+J(y)=\frac{1}{N}\sum_{(x, t)\in D}^{N}\left\| t-y\right\|^2_2 \\ 
+\\ y=\text{Identity}(z^2) \\ 
+\\ z^2=w^2_1\cdot a^1_1 + w^2_2\cdot a^1_2 + ... + w^2_m\cdot a^1_m \\ 
+\\ a^1_m=\text{ReLU}(z^1_m) \\ 
+\\ z^1_m=w^1_{1m}\cdot x_1 + w^1_{2m}\cdot x_2 + ... + w^1_{nm}\cdot x_n
+$$
+
+- 가중치 $w^1_{nm}$ : 위 첨자 1(계층 번호), 아래 첨자 $n$(이전 뉴런의 인덱스),  $m$(뉴런의 인덱스)
+- 가중 합산 출력 변수 $z^1_m$ : 위 첨자 1(계층 번호), 아래 첨자 $m$(뉴런의 인덱스)
+- 활성 함수 출력 변수 $a^1_m$ : 위 첨자 1(계층 번호), 아래 첨자 $n$(뉴런의 인덱스)
+
+### 2. 파라미터 업데이트 식
+
+$$
+{w^1_{nm}}^+=w^1_{nm}-\alpha\frac{\partial J}{\partial w^1_{nm}}
+$$
+
+$$
+\frac{\partial J}{\partial w^1_{nm}}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2} \cdot \frac{\partial z^2}{\partial a^1_m} \cdot \frac{\partial a^1_m}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{nm}}
+$$
+
+### 3. 연쇄 법칙을 사용한 미분 계산
+
+$$
+z^1_m=w^1_{1m} \cdot x_1 + w^1_{2m} \cdot x_2 + ... + w^1_{nm} \cdot x_n \ \ ... \ \ \frac{\partial z^1_m}{\partial w^1_{nm}}=x_n
+$$
+
+$$
+a^1_m=\text{ReLU}(z^1_m) \ \ ... \ \ \frac{\partial a^1_m}{\partial z^1_m}=\text{ReLU}'(z^1_m)
+$$
+
+$$
+z^2=w^2_1 \cdot a^1_1 + w^2_2 \cdot a^1_2 + ... + w^2_m \cdot a^1_m \ \ ... \ \ \frac{\partial z^2}{\partial a^1_m}=w^2_m
+$$
+
+$$
+y=\text{Identity}(z^2) \ \ ... \ \ \frac{\partial y}{\partial z^2}=\text{Identity}'(z^2)=1
+$$
+
+$$
+J(y)=\frac{1}{N}\sum_{(x, t)\in D}^N \left\| t-y\right\|^2_2 \ \ ... \ \ \frac{\partial J}{\partial y} \ \ ... \ \ \frac{\partial J}{\partial y}=-\frac{1}{N}\sum_{(x, t)\in D}^N 2(t-y)
+$$
+
+### 4. 신경망에서 연쇄 법칙으로 미분하는 과정
+
+$$
+\frac{\partial J}{\partial w^1_{nm}}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2} \cdot \frac{\partial z^2}{\partial a^1_m} \cdot \frac{\partial a^1_m}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{nm}}
+$$
+
+![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/556114b9-4301-46af-a5cb-bc9a7226abd0/1.jpg)
+
+$$
+\frac{\partial J}{\partial w^1_{nm}}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2} \cdot \frac{\partial z^2}{\partial a^1_m} \cdot \frac{\partial a^1_m}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{nm}} \\ = -\frac{1}{N}\sum_{(x, t)\in D}^N 2(t-y) \cdot 1 \cdot w^2_m \cdot \text{ReLU}'(z^1_m) \cdot x_n
+$$
+
+$$
+{w^1_{nm}}^+=w^1_{nm} - \alpha\frac{\partial J}{\partial w^1_{nm}} \\ = w^1_{nm} - \alpha(-\frac{1}{N}\sum_{(x, t)\in D}^N 2(t-y) \cdot 1 \cdot w^2_m \cdot \text{ReLU}'(z^1_m) \cdot x_n)
+$$
