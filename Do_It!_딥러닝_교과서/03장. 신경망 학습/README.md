@@ -167,3 +167,139 @@ $$
 $$
 {w^1_{nm}}^+=w^1_{nm} - \alpha\frac{\partial J}{\partial w^1_{nm}} \\ = w^1_{nm} - \alpha(-\frac{1}{N}\sum_{(x, t)\in D}^N 2(t-y) \cdot 1 \cdot w^2_m \cdot \text{ReLU}'(z^1_m) \cdot x_n)
 $$
+
+# 4. 역전파 알고리즘
+
+## 1. 역전파 알고리즘(Backpropagation Algorithm)
+
+$$
+\frac{\partial J}{\partial w^1_{nm}}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2} \cdot \frac{\partial z^2}{\partial h^1_m} \cdot \frac{\partial h^1_m}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{nm}}
+$$
+
+$$
+\frac{\partial J}{\partial w^1_{n-1m}}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2} \cdot \frac{\partial z^2}{\partial a^1_m} \cdot \frac{\partial a^1_m}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{n-1m}}
+$$
+
+$$
+\frac{\partial J}{\partial w^1_{nm}}=\frac{\partial J}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{nm}}
+$$
+
+$$
+\frac{\partial J}{\partial w^1_{n-1m}}=\frac{\partial J}{\partial z^1_m} \cdot \frac{\partial z^1_m}{\partial w^1_{n-1m}}
+$$
+
+- 오차 : 각 뉴런의 공통부분에 해당하는 미분값
+- 오차를 역방향으로 전파하면서 미분을 계산함
+
+## 2. 역전파 알고리즘의 실행 순서
+
+### 1. 손실 함수 미분
+
+- 손실 함수 지역 미분 : 손실 함수 $J(y)=\frac{1}{N}\sum_{(x, t)\in D}^{N}\left\| t-y\right\|^2_2$의 지역 미분 $\frac{\partial J}{\partial y}$ 계산
+- 손실 함수 전역 미분 : 손실 함수 전역 미분은 지역 미분 $\frac{\partial J}{\partial y}$과 같음
+- 손실 함수 전역 미분 $\frac{\partial J}{\partial y}$을 출력 계층 $O$에 전달
+
+### 2. 출력 뉴런 미분
+
+- 활성 함수 지역 미분 : 활성 함수 $y=\text{Identity}(z^2)$의 지역 미분 $\frac{\partial y}{\partial z^2}$를 계산
+- 활성 함수 전역 미분 : $\frac{\partial J}{\partial y}$과 $\frac{\partial y}{\partial z^2}$을 곱해서 활성 함수 전역 미분 $\frac{\partial J}{\partial z^2}=\frac{\partial J}{\partial y} \cdot \frac{\partial y}{\partial z^2}$를 계산
+- 공통부분 계산 : 활성 함수의 전역 미분 $\frac{\partial J}{\partial z^2}$이 뉴런의 공통부분이 됨
+- 가중치 지역 미분 : 가중 합산 식에 대해 가중치별로 지역 미분 계산
+- 가중치 전역 미분 : 공통부분과 지역 미분을 곱해서 가중치의 전역 미분 계산
+- 가중치 업데이트 : 전역 미분으로 가중치 업데이트
+- 입력 지역 미분 : 가중 합산 식에 대해 입력별로 지역 미분 계산
+- 입력 전역 미분 : 공통부분과 지역 미분을 곱해서 입력의 전역 미분을 계산
+- 은닉 뉴런에 미분 전달 : 은닉 뉴런에 입력의 전역 미분을 전달
+
+### 3. 은닉 뉴런 미분
+
+- 활성 함수 지역 미분 : 활성 함수의 지역 미분 계산
+- 활성 함수 전역 미분 : 전역 미분과 지역 미분을 곱해서 활성 함수 전역 미분을 계산
+- 공통부분 계산 : 활성 함수의 전역 미분이 뉴런의 공통부분
+- 가중치 지역 미분 : 가중 합산 식에 대해 가중치별로 지역 미분을 계산
+- 가중치 전역 미분 : 공통부분과 지역 미분을 곱해서 가중치의 전역 미분을 계산
+- 가중치 업데이트 : 가중치 전역 미분으로 가중치 업데이트
+- 입력 계층에는 가중치가 없으므로 미분 전달하지 않음
+
+## 3. 뉴런 관점에서 보는 역전파 알고리즘
+
+$$
+\frac{\partial z}{\partial x}=\frac{\partial f(x, y)}{\partial x}
+$$
+
+$$
+\frac{\partial y}{\partial x}=\frac{\partial f(x, y)}{\partial y}
+$$
+
+$$
+\frac{\partial J}{\partial x}=\frac{\partial J}{\partial z} \cdot \frac{\partial z}{\partial x}
+$$
+
+$$
+\frac{\partial J}{\partial y}=\frac{\partial J}{\partial z} \cdot \frac{\partial z}{\partial y}
+$$
+
+- 지역 미분을 구하고 전달받은 전역 미분에 곱하는 것
+
+### 1. 계층 단위의 미분
+
+- 그레이디언트 : 뉴런에서 가중치의 미분을 나타냄, 벡터 표현
+- 야코비안(Jacobian) : 계층에서 가중치와 미분을 나타냄, 행렬 표현
+
+### 2. 야코비안
+
+- $f:\mathbb{R^n} \rightarrow \mathbb{R^n}$ 형태의 벡터 함수의 미분
+    
+    $$
+    Jf=\begin{pmatrix}
+    \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & \cdots  & \frac{\partial f_1}{\partial x_n} \\
+    \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} &  & \frac{\partial f_2}{\partial x_n} \\
+    \vdots  &  & \ddots  & \vdots  \\
+    \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & \cdots  & \frac{\partial f_m}{\partial x_n} \\
+    \end{pmatrix}
+    \\ f(x)=(f_1(x), f_2(x), \cdots , f_m(x))
+    \\ x=(x_1, x_2, \cdots , x_n)
+    $$
+    
+
+## 4. 주요 활성 함수의 미분
+
+- 시그모이드
+    
+    $$
+    f(x)=\frac{1}{1+e^{-x}}
+    $$
+    
+    $$
+    f'(x)=f(x)(1-f(x))
+    $$
+    
+- 하이퍼볼릭 탄젠트
+    
+    $$
+    f(x)=\frac{e^x-e^{-x}}{e^x+e^{-x}}
+    $$
+    
+    $$
+    f'(x)=1-f(x)^2
+    $$
+    
+- ReLU
+    
+    $$
+    f(x)=\begin{cases}x & \text{if} \ \ x > 0 \\ 0 & \text{otherwise} \end{cases}
+    $$
+    
+    $$
+    f'(x)=\begin{cases}1 & \text{if} \ \ x > 0 \\ 0 & \text{otherwise} \end{cases}
+    $$
+    
+- 리키 ReLU
+    
+    $$
+    f(x)=\begin{cases}x & \text{if} \ \ x > 0 \\ 0.01x & \text{otherwise} \end{cases}
+    $$
+    
+    $$
+    f(x)=\begin{cases}1 & \text{if} \ \ x > 0 \\ 0.01 & \text{otherwise} \end{cases}
+    $$
