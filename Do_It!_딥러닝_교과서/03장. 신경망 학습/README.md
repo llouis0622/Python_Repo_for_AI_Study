@@ -347,3 +347,263 @@ $$
 ### 2. 미니배치의 크기는 어느 정도로 정해야 할까?
 
 - 2의 거듭제곱으로 설정 → GPU 메모리 효율적으로 사용 가능
+
+# 6. 손실 함수 정의
+
+## 1. 손실 함수를 정의하는 기준
+
+- 모델이 관측 데이터를 잘 표현하도록 정의되어야 함
+- 최적해가 관측 데이터를 잘 설명할 수 있는 함수의 파라미터값이 되도록 정의되어야 함
+    - 모델이 오차 최소화되도록 정의
+    - 모델이 추정하는 관측 데이터의 확률이 최대화되도록 최대우도추정 방식으로 정의
+
+### 1. 오차 최소화(Error Minimization) 관점
+
+- 모델의 예측과 관측 데이터의 타깃의 차이
+
+### 2. 최대우도추정(MLE, Maximum Likelihood Estimation) 관점
+
+- 우도(Likelihood) : 모델이 추정하는 관측 데이터의 확률
+- 관측 데이터의 확률이 최대화되는 확률분포 함수를 모델이 표현하도록 만드는 것
+
+## 2. 오차 최소화 관점에서 손실 함수 정의
+
+### 1. 모델의 오차와 손실 함수
+
+$$
+\epsilon_i=t_i-y(x_i; \ \theta)
+$$
+
+- 노름(Norm) : 오차의 크기를 나타내는 대표적인 함수, 벡터의 크기를 나타냄
+- 손실함수 : 평균제곱오차(MSE, Mean Squared Error), 평균절대오차(MAE, Mean Absolute Error)
+
+### 2. 평균제곱오차(MSE)
+
+- 모델이 타깃의 평균을 예측하도록 만듦
+- $l_2$ 손실(Loss) : 오차의 $L_2$ 노름의 제곱의 평균
+    
+    $$
+    J(\theta)=\frac{1}{N}\sum^N_{i=1}\left\| t_i-y(x_i; \ \theta) \right\|^2_2
+    $$
+    
+- 오차 증가 → 손실 제곱승 증가 → 이상치 반응 민감
+
+### 3. 평균절대오차(MAE)
+
+- 모델이 타깃의 중앙값을 예측하도록 만듦
+- $l_1$ 손실 : 오차의 $L_1$ 노름의 평균
+    
+    $$
+    J(\theta)=\frac{1}{N}\sum^N_{i=1}\left\| t_i-y(x_i; \ \theta) \right\|_1
+    $$
+    
+- 오차 증가 → 손실 선형적 증가 → 이상치 반응 덜함
+- 구간별 미분 처리 필요
+
+### 4. 오차 최소화 관점에서 최적화 문제 정의
+
+$$
+\theta^*=\argmin_\theta \ \ J(\theta)=\argmin_\theta \frac{1}{N}\sum^N_{i=1}\left\| t_i-y(x_i; \ \theta) \right\|^2_2
+$$
+
+### 5. 노름과 거리 함수
+
+- 노름 : 벡터의 크기, 거리 함수(Distance Function)
+    
+    $$
+    \left\| x \right\|_p=(\sum^n_{i=0}|x_i|^p)^{\frac{1}{p}}, \ p \geq 1
+    \\ x^T=(x_1, x_2, \cdots, x_n)
+    $$
+    
+- $L_1$ 노름 : 벡터의 각 요소에 절댓값을 취해서 합산한 값
+    
+    $$
+    \|x\|_1=\sum^n_{i=0}|x_i|
+    $$
+    
+- $L_2$ 노름 : 벡터의 각 요소에 절댓값을 취해서 제곱한 후 합산해서 제곱근을 취한 값
+    
+    $$
+    \|x\|_2=(\sum^n_{i=0}|x_i|^2)^{\frac{1}{2}}
+    $$
+    
+- 유클리드 거리(Euclidean Distance) : 두 점 사이에 가장 짧은 거리, $L_2$ 노름
+- 맨하탄 거리(Manhattan Distance) : 각 축을 따라 직각으로 이동하는 거리, $L_1$ 노름
+- 민코프스키 거리(Minkowski Distance) : 두 벡터의 차에 $p$-노름 적용
+
+## 3. 최대우도추정 관점에서 손실 함수 정의
+
+### 1. 관측 데이터의 우도와 손실 함수
+
+- 우도 : 신경망 모델로 추정한 관측 데이터의 확률
+    
+    $$
+    p(\mathcal{D} \ | \ \theta)=\prod^N_{i=0}p(t_i \ | \ x_i; \ \theta)
+    $$
+    
+
+### 2. 최대우도추정 관점에서 최적화 문제 정의
+
+$$
+\theta^\star=\argmax_\theta p(\mathcal{D} | \theta)=\argmax_\theta \prod^N_{i=1}p(t_i|x_i; \ \theta)
+$$
+
+### 3. 최대우도추정 관점의 최적화 문제 개선
+
+- 목적 함수를 개선된 형태로 만들기 위해 우도 대신 로그 우도(Log Likelihood) 사용
+- 최대화 문제를 최소화 문제로 변환하기 위해 목적 함수에 음의 로그 우도(Negative Log Likelihood) 사용
+
+### 4. 목적 함수를 로그 우도로 변환
+
+$$
+J(\theta)=\log p(\mathcal{D}|\theta)=\log\prod^N_{i=1}p(t_i|x_i; \ \theta)=\sum^N_{i=1}\log p(t_i|x_i; \ \theta)
+$$
+
+- 로그를 취해 지수 항 상쇄 → 다항식 변환
+- 언더플로 방지
+- 최적해는 달라지지 않음
+
+### 5. 최대화 문제를 최소화 문제로 변환
+
+$$
+\text{NLL}(\theta)=-\log p(\mathcal{D}|\theta)=-\sum^N_{i=1}\log p(t_i|x_i; \ \theta)
+$$
+
+$$
+\theta^\star=\argmin_\theta -\sum^N_{i=1}\log p(t_i|x_i; \ \theta)
+$$
+
+### 6. 우도와 최대우도추정
+
+- 우도 : 파라미터로 추정된 확률분포에서 관측 데이터의 확률
+    
+    $$
+    \mathcal{L}(\theta|x)=p(x|\theta)
+    $$
+    
+- 최대우도추정 : 우도를 최대화하는 확률분포를 추정하는 방식
+
+### 7. 회귀 문제에서 최대우도추정을 위한 손실 함수 정의
+
+$$
+p(t_i|x_i; \ \theta)=\mathcal{N}(t_i|y(x_i; \ \theta), \ \beta^{-1}=\frac{1}{\sqrt{\beta^{-1}2\pi}}e^{-\frac{(t_i-y(x_i; \ \theta))^2}{2\beta^{-1}}}
+$$
+
+$$
+J(\theta)=-\log\prod^N_{i=1}p(t_i|x_i; \ \theta)
+\\ =-\log\prod^N_{i=1}\frac{1}{\sqrt{\beta^{-1}2\pi}}e^{-\frac{(t_i-y(x_i; \ \theta))^2}{2\beta^{-1}}}
+\\ =-\log\sum^N_{i=1}\frac{1}{\sqrt{\beta^{-1}2\pi}}e^{-\frac{(t_i-y(x_i; \ \theta))^2}{2\beta^{-1}}}
+\\ =\frac{\beta}{2}\sum^N_{i=1}(t_i-y(x_i; \ \theta))^2+\frac{N}{2}\log\beta^{-1}2\pi
+\\ =\frac{\beta}{2}\sum^N_{i=1}\|t_i-y(x_i; \ \theta)\|^2_2+\text{const}
+$$
+
+- 오차제곱합(SSE, Sum of Squared Error)
+    
+    $$
+    J(\theta)=\sum^N_{i=1}\|t_i-y(x_i; \ \theta)\|^2_2
+    $$
+    
+
+### 8. 이진 분류 문제에서 최대우도추정을 위한 손실 함수 정의
+
+$$
+p(t_i|x_i; \ \theta)=\mathcal{Bern}(t_i; \ \mu(x_i; \ \theta))=\mu(x_i; \ \theta)^{t_i}(1-\mu(x_i; \ \theta))^{1-t_i}, t_i\in\{0, 1\}
+$$
+
+$$
+J(\theta)=-\log\prod^N_{i=1}p(t_i|x_i; \ \theta)
+\\ =-\log\prod^N_{i=1}\mu(x_i; \ \theta)^{t_i}(1-\mu(x_i; \ \theta))^{1-t_i}
+\\ =-\sum^N_{i=1}\log\mu(x_i; \ \theta)^{t_i}(1-\mu(x_i; \ \theta))^{1-t_i}
+\\ =-\sum^N_{i=1}t_i \cdot \log\mu(x_i; \ \theta)+(1-t_i) \cdot \log(1-\mu(x_i; \ \theta))
+$$
+
+- 이진 크로스 엔트로피(Binary Cross Entropy)
+    
+    $$
+    J(\theta)=-\sum^N_{i=1}t_i \cdot \log\mu(x_i; \ \theta)+(1-t_i) \cdot \log(1-\mu(x_i; \ \theta))
+    $$
+    
+
+$$
+J(\theta)=-\frac{1}{N}\sum^N_{i=1}\sum^K_{k=1}t_i \cdot \log\mu(x_i; \ \theta)+(1-t_i) \cdot \log(1-\mu(x_i; \ \theta))
+$$
+
+### 9. 다중 분류 문제에서 최대우도추정을 위한 손실 함수 정의
+
+$$
+p(t_i|x_i; \ \theta)=\text{Category}(t_i; \ \mu(x_i; \ \theta))=\prod^K_{k=1}\mu(x_i; \ \theta)^{t_{ik}}_k
+$$
+
+$$
+\mu(x_i; \ \theta)=(\mu(x_i; \ \theta)_1, \mu(x_i; \ \theta)_2, \cdots, \mu(x_i; \ \theta)_K)^T, \sum^K_{k=1}\mu(x_i; \ \theta)_k=1
+$$
+
+$$
+t_i=(t_{i1}, t_{i2}, \cdots, t_{iK})^T, t_{ik}=\begin{cases} 1, & k=j \\ 0, & k \neq j \end{cases}, j \in \{1, 2, \cdots, K\}
+$$
+
+$$
+J(\theta)=-\log\prod^N_{i=1}p(t_i|x_i; \ \theta)
+\\ =-\log\prod^N_{i=1}\prod^K_{k=1}\mu(x_i; \ \theta)^{t_{ik}}_k
+\\ =-\sum^N_{i=1}\log\prod^K_{k=1}\mu(x_i; \ \theta)^{t_{ik}}_k
+\\ =-\sum^N_{i=1}\sum^K_{k=1}t_{ik} \cdot \log\mu(x_i; \ \theta)_k
+$$
+
+- 크로스 엔트로피(Cross Entropy)
+    
+    $$
+    J(\theta)=-\sum^N_{i=1}\sum^K_{k=1}t_{ik} \cdot \log\mu(x_i; \ \theta)_k
+    $$
+    
+
+$$
+J(\theta)=-\frac{1}{N}\sum^N_{i=1}\sum^K_{k=1}t_{ik} \cdot \log\mu(x_i; \ \theta)_k
+$$
+
+## 4. 신경망 학습을 위한 손실 함수
+
+- 회귀 문제 : 평균제곱오차
+- 분류 문제 : 이진 크로스 엔트로피, 크로스 엔트로피
+
+## 5. 정보량, 엔트로피, 크로스 엔트로피
+
+### 1. 정보량(Self-Information)
+
+- 확률을 표현하는 데 필요한 비트 수
+- 사건이 얼마나 자주 발생하는지를 나타냄
+    
+    $$
+    I(x)=\log\frac{1}{p(x)}=-\log p(x)
+    $$
+    
+    ![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/1175d672-62f3-4b56-8f64-1c5fe0bc1574/1.jpg)
+    
+
+### 2. 엔트로피(Entropy)
+
+- 확률 변수의 정보량의 기댓값
+- 확률 변수 또는 확률분포가 얼마나 불확실(Uncertain)한지 혹은 무작위(Random)한지를 나타냄
+    
+    $$
+    \mathcal{H}(p)=\mathbb{E}_{x\sim p(x)}[-\log p(x)]
+    \\ =-\int p(x)\log p(x)dx
+    $$
+    
+    ![1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/3f7d01ef-326c-4ab1-8978-91877a298d9e/1.png)
+    
+
+### 3. 크로스 엔트로피(Cross Entropy)
+
+- $q$의 정보량을 $p$에 대한 기댓값을 취하는 것
+- 두 확률 분포의 차이 또는 유사하지 않은 정도(Dissimilarity)
+    
+    $$
+    \mathcal{H}(p, q)=-\mathbb{E}_{x\sim p(x)}\log p(x)
+    \\ =-\int_x p(x)\log q(x)dx
+    $$
+    
+
+### 4. 손실 함수로서 이진 크로스 엔트로피의 동작
+$$
+J(\theta)=-\frac{1}{N}\sum^N_{i=1}t_i \cdot \log\mu(x_i; \ \theta)+(1-t_i) \cdot \log(1-\mu(x_i; \ \theta))
+$$
