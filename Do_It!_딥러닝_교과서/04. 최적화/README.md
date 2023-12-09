@@ -105,3 +105,91 @@ $$
 v_{t+1}=\rho v_t-\alpha\nabla f(\tilde{x}_t)
 \\ \tilde{x}_{t+1}=\tilde{x}_t+v_{t+1}+\rho(v_{t+1}-v_t)
 $$
+
+# 4. AdaGrad
+
+## 1. 핵심 개념
+
+- AdaGrad(Adaptive Gradient) : 손실 함수의 곡면의 변화에 따라 적응적으로 학습률을 정하는 알고리즘
+- 경사가 가파를 때 → 작은 폭으로 이동
+- 경사가 완만할 때 → 큰 폭으로 빠르게 이동
+    
+    $$
+    기울기 벡터=(\nabla f(x_1), \nabla f(x_2), \nabla f(x_3), \cdots, \nabla f(x_t))
+    $$
+    
+    $$
+    곡면의 변화량=r_{t+1}=\nabla f(x_1)^2, \nabla f(x_2)^2, \cdots, \nabla f(x_t)^2
+    $$
+    
+- 적응적 학습률 : 곡면의 변화량에 반비례
+    
+    $$
+    r_{t+1}=r_t+\nabla f(x_t)^2
+    $$
+    
+    $$
+    x_{t+1}=x_t-\frac{\alpha}{\sqrt {r_{t+1}}+\epsilon} \odot\nabla f(x_t)
+    $$
+    
+
+## 2. 학습 초반에 학습이 중단되는 현상
+
+- 곡면 변화량을 전체 경로의 기울기 벡터의 크기로 계산 → 적응적 학습률 낮아짐
+
+# 5. RMSProp
+
+## 1. 핵심 개념
+
+- RMSProp(Root Mean Square Propagation) : 최근 경로의 곡면 변화량에 따라 학습률을 적응적으로 결정하는 알고리즘
+- 전체 경로가 아닌 최근 경로의 변화량 측정
+- 지수가중이동평균(Exponentially Weighted Moving Average)
+    
+    $$
+    r_{t+1}=\beta r_t+(1-\beta)\nabla f(x_t)^2
+    $$
+    
+    $$
+    x_{t+1}=x_t-\frac{\alpha}{\sqrt {r_{t+1}}+\epsilon} \odot\nabla f(x_t)
+    $$
+    
+
+## 2. 최근 경로의 곡면 변화량
+
+$$
+r_{t+1}=\beta^tr_1+(1-\beta)(\nabla f(x_t)^2+\beta\nabla f(x_{t-1})^2+\cdots+\beta^{t-1}\nabla f(x_1)^2)
+$$
+
+- 최근 경로의 그레이디언트는 많이 반영되고 오래된 경로의 그레이디언트는 작게 반영됨
+
+# 6. Adam
+
+## 1. 핵심 개념
+
+- Adam(Adaptive Moment Estimation) : SGD 모멘텀 + RMSProp, 진행하던 속도에 관성을 주고 동시에 최근 경로의 곡면의 변화량에 따라 적응적 학습률을 갖는 알고리즘
+- 1차 관성(First Momemtum) : 속도 계산
+    
+    $$
+    v_{t+1}=\beta_1v_t+(1-\beta_1)\nabla f(x_t)
+    $$
+    
+- 2차 관성(Second Momemtum) : 그레이디언트 제곱의 지수가중이동평균을 구하는 식
+    
+    $$
+    r_{t+1}=\beta_2r_t+(1-\beta_2)\nabla f(x_t)^2
+    $$
+    
+    $$
+    x_{t+1}=x_t-\frac{\alpha}{\sqrt {r_{t+1}}+\epsilon} \odot\nabla f(x_t)
+    $$
+    
+
+## 2. 학습 초기 경로 편향 문제
+
+### 1. 초기 경로에 편향이 발생하는 이유
+
+- $r_1$이 작아짐 → 적응적 학습률이 커짐 → 출발 지점에서 멀리 떨어진 곳으로 이동
+
+### 2. 초기 경로의 편향 제거
+
+- $r_1$ → 그레이디언트 제곱 → 학습률이 급격히 커지는 편향 제거
