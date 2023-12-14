@@ -212,3 +212,193 @@ $$
     $$
     L번째 \ 계층의 \ 뉴런 \ 수용 \ 영역=(F-1)\times S^{L-1}+\cdots+(F-1)\times S^1+F
     $$
+
+# 3. 콘벌루션 신경망의 가정 사항
+
+## 1. 콘벌루션 연산의 성질
+
+- 매우 강한 사전 분포(Infinitely Strong Prior) : 일부 파라미터를 사용하지 않음
+- 희소 연결(Sparse Connectivity) : 입력 데이터와 겹치는 영역에만 연결되고 나머지 영역에서는 연결이 없음
+    
+    $$
+    O(k\times n)
+    $$
+    
+- 파라미터 공유(Parameter Sharing) : 동일한 콘벌루션 필터로 콘벌루션을 함
+    
+    $$
+    O(k)
+    $$
+    
+- 이동등변성(Translation Equivariance) : 위치에 상관없이 동일한 지역 특징 인식 가능
+    
+    $$
+    f(g(x))=g(f(x))
+    $$
+    
+
+## 2. 풀링 연산의 성질
+
+- 위치불변성(Positional Invariance) : 입력이 아주 작게 이동했을 때 출력이 바뀌지 않는 성질
+    
+    $$
+    f(x)=f(g(x))
+    $$
+    
+
+# 4. 개선된 콘벌루션 연산
+
+- 표준 콘벌루션 연산 한계
+    - 파라미터 수와 계산량 많음
+    - 죽은 채널이 발생해도 알기 어려움
+    - 여러 채널에 대해 한꺼번에 연산 → 공간 특징과 채널 특징 구분 어려움
+
+## 1. 팽창 콘벌루션(Dilated Convolution)
+
+### 1. 뉴런의 수용 영역을 넓힐 때 문제점
+
+- 콘벌루션 필터 크기 증가, 신경망 깊이 증가 → 파라미터 수, 계산량 증가
+- 서브샘플링 계층 추가 → 이미지 공간 특징 손실
+
+### 2. 공간 특징을 유지하며 수용 영역을 넓히는 팽창 콘벌루션
+
+- 팽창 콘벌루션 필터 : 콘벌루션 필터의 수용 픽셀 간격을 띄위서 필터를 넓게 만듦
+- 팽창 : 수용 픽셀 간격
+
+## 2. 점별 콘벌루션(Pointwise Convolution)
+
+- 가로×세로 크기가 1×1인 콘벌루션 필터 사용
+- 채널 특징 학습, 죽은 채널 영향 감소
+
+## 3. 그룹 콘벌루션(Group Convolution)
+
+- 채널을 여러 그룹으로 나눠서 콘벌루션하는 방식
+- 파라미터 계산 절약, 채널 간 상관관계 구조 학습 가능
+
+## 4. 깊이별 콘벌루션(Depthwise Convolution)
+
+- 각 채널의 공간 특징 학습 → 채널별 콘벌루션 연산 수행 이후 결과 재결합
+- 입력 채널 수 = 출력 채널 수
+
+## 5. 깊이별 분리 콘벌루션(Depthwise Seperable Convolution)
+
+- 깊이별 콘벌루션 + 점별 콘벌루션
+- 공간 특징, 채널 특징 별도 학습, 계산량 8~9배 감소
+
+## 6. 셔플 그룹 콘벌루션(Shuffled Grouped Convolution)
+
+- 주기적으로 그룹 간에 채널을 섞어서 정보가 교환되도록 만든 그룹 콘벌루션 방식
+
+## 7. 공간 분리 콘벌루션(Spatially Seperable Convolution)
+
+- 정사각형 콘벌루션 필터를 가로 방향 필터와 세로 방향 필터로 인수분해
+- 최적해가 아닌 준최적해를 찾을 수도 있음
+
+# 5. 업샘플링(Upsampling) 연산
+
+- 이미지 크기를 키우는 연산
+- 세그멘테이션(Segmentation) : 이미지 영역을 분할하는 방법
+
+## 1. 언풀링(Unpooling)
+
+- 풀링의 반대 연산, 요약된 통계 데이터를 요약하기 전 크기의 데이터로 복구하는 연산
+- 바늘방석 언풀링(Bed of Nails) : 첫 번째 픽셀은 원래 값으로 채우고 나머지 픽셀은 0으로 채우는 방법
+- 최근접 이웃 언풀링(Nearest Neighbor) : 모두 원래의 픽셀값으로 채우는 방법
+- 맥스 언풀링(Max Unpooling) : 다운샘플링과 업샘플링이 대칭을 이루는 모델 구조에서만 사용, 맥스 풀링을 할 때 최댓값의 위치를 기억해 두었다가 언풀링을 할 때 기억해 둔 위치로 값을 복원하고 나머지는 0으로 채움
+
+## 2. 트랜스포즈 콘벌루션(Transposed Convolution)
+
+- 콘벌루션 필터를 학습하듯이 업샘플링 필터도 학습하도록 만든 방식
+- 콘벌루션 행렬의 전치 행렬로 연산 표현 가능
+    
+    $$
+    W=\begin{bmatrix} 
+      x & y & z & 0 & 0 & 0 \\
+      0 & x & y & z & 0 & 0 \\
+      0 & 0 & x & y & z & 0 \\
+      0 & 0 & 0 & x & y & z \\
+      \end{bmatrix}
+    $$
+    
+    $$
+    w*x=Wx
+    \\ \begin{bmatrix} 
+      x & y & z & 0 & 0 & 0 \\
+      0 & x & y & z & 0 & 0 \\
+      0 & 0 & x & y & z & 0 \\
+      0 & 0 & 0 & x & y & z \\
+      \end{bmatrix}
+    \begin{bmatrix} 
+      0 \\
+      a \\
+      b \\
+      c \\
+      d \\
+      0
+      \end{bmatrix}=
+    \begin{bmatrix} 
+      ax+bz \\
+      ax+by+cz \\
+      bx+cy+dz \\
+      cx+dy \\
+      \end{bmatrix}
+    $$
+    
+    $$
+    w*^Tx=W^Tx
+    \\ \begin{bmatrix} 
+      x & 0 & 0 & 0 \\
+      y & x & 0 & 0 \\
+      z & y & x & 0 \\
+      0 & z & y & x \\
+      0 & 0 & z & y \\
+      0 & 0 & 0 & z
+      \end{bmatrix}
+    \begin{bmatrix} 
+      a \\
+      b \\
+      c \\
+      d
+    \end{bmatrix}=
+    \begin{bmatrix} 
+      ax \\
+      ay+bx \\
+      az+by+cx \\
+      bz+cy+dx \\
+      cz+dy \\
+      dz
+      \end{bmatrix}
+    $$
+    
+    $$
+    W=\begin{bmatrix} 
+      x & y & z & 0 & 0 \\
+      0 & 0 & x & y & z \\
+      \end{bmatrix}
+    $$
+    
+    $$
+    \begin{bmatrix} 
+      x & y & z & 0 & 0 \\
+      0 & 0 & x & y & z \\
+      \end{bmatrix}
+    \begin{bmatrix} 
+      0 \\ a \\ b \\ c \\ d
+      \end{bmatrix}
+    =\begin{bmatrix} 
+      ay+bz \\
+      bx+cy+dz \\
+      \end{bmatrix}
+    $$
+    
+    $$
+    \begin{bmatrix} 
+      x & 0 \\ y & 0 \\ z & x \\ 0 & y \\ 0 & z
+      \end{bmatrix}
+    \begin{bmatrix} 
+      a \\ b
+      \end{bmatrix}=
+    \begin{bmatrix} 
+      ax \\ ay \\ az+bx \\ by \\ bz
+      \end{bmatrix}
+    $$
