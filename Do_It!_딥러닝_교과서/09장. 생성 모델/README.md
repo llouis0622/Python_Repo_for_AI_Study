@@ -226,3 +226,127 @@ $$
     
 - 순방향 KL : 전체 분포를 덮는 형태로 근사, 0보다 값이 큰 영역에서 두 분포의 차이를 줄임
 - 역방향 KL : 가장 높은 봉우리로 근사, 가장 높은 봉우리에서 두 분포의 차이를 줄임
+
+# 3. GAN(Generative Adversarial Model)
+
+- 암묵적 확률 추정 방식
+- 생성자와 판별자가 적대적 관계에서 경쟁하면서 훈련
+- 미니맥스(MiniMax) 게임 → 내시 균형(Nash Equilibrium)
+
+## 1. GAN 구조
+
+- 생성자 : 저차원의 잠재 벡터를 입력받아 고차원의 샘플 생성
+- 판별자 : 훈련 데이터를 진짜로 판별, 생성자가 생성한 샘플 가짜로 판별
+- 콘벌루션 신경망 생성자, 판별자
+
+## 2. GAN 목적 함수
+
+$$
+\min_G \ \max_D V(D, G)=\mathbb{E}_{x\sim p_{data}(x)}[\log D(x)]+\mathbb{E}_{z\sim p_z(z)}[\log(1-D(G(z)))]
+$$
+
+### 1. 판별자의 목적 함수
+
+$$
+\max_D V(D, G)=\max\mathbb{E}_{x\sim p_{data}(x)}[\log D(x)]+\mathbb{E}_{z\sim p_z(z)}[\log(1-D(G(z)))]
+$$
+
+### 2. 생성자의 목적 함수
+
+$$
+\min_G V(D, G)=\min\mathbb{E}_{z\sim p_z(z)}[\log(1-D(G(z)))]=\max\mathbb{E}_{z\sim p_z(z)}[\log(D(G(z)))]
+$$
+
+### 3. 훈련 과정에서 생성자와 판별자의 분포 변화
+
+$$
+D^{\star}(x)=\frac{p_{data}(x)}{p_{data}(x)+p_g(x)}
+$$
+
+$$
+p^{\star}_g(x)=p_{data}(x)
+$$
+
+## 3. GAN 최적해
+
+### 1. 판별자의 최적해 유도
+
+$$
+V(D, G)=\int p_{data}(x)\log D(x)+p_g(x)\log(1-D(x))dx
+$$
+
+### 2. 임계점 구하기
+
+$$
+D^{\star}(x)=\frac{p_{data}(x)}{p_{data}(x)+p_g(x)}
+$$
+
+### 3. 생성자의 최적해 유도
+
+$$
+C(G)=\min_GV(D^{\star}, G)=2\cdot\text{JSD}(p_{data}(x), p_g(x))-\log(4)
+$$
+
+$$
+\text{JSD}(p, q)=\frac{1}{2}D_{KL}(p\|\frac{p+q}{2})+\frac{1}{2}D_{KL}(q\|\frac{p+q}{2})
+$$
+
+$$
+C(G)=\min_GV(D^{\star}, G)=\min2\cdot\text{JSD}(p_{data}(x), p_g(x))-\log(4)
+$$
+
+### 4. 판별자와 생성자의 최적해
+
+$$
+p^{\star}_g(x)=p_{data}(x)
+$$
+
+$$
+D^{\star}(x)=\frac{p_{data}(x)}{p_{data}(x)+p_g(x)}=\frac{1}{2}
+$$
+
+## 4. GAN 훈련
+
+### 1. 최적화에 적합하지 않은 생성자의 손실 함수
+
+$$
+\min_G\mathbb{E}_{z\sim p_z(z)}[\log(1-D(G(z)))]
+$$
+
+### 2. 생성자의 손실 함수 개선
+
+$$
+\max_G\mathbb{E}_{z\sim p_z(z)}[\log(D(G(z)))]=\min_G\mathbb{E}_{z\sim p_z(z)}[-\log(D(G(z)))]
+$$
+
+## 5. 데이터 생성
+
+![1.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/81ce352b-f505-4b7c-ba55-561d76267295/2ce102bd-c2ac-4eea-a189-3f3d15cd944b/1.jpg)
+
+## 6. DCGAN(Deep Convolution GAN)
+
+- 고화질의 이미지를 생성한 최초의 GAN 모델
+- 생성자 : 트랜스포즈 콘벌루션 → 업샘플링
+- 판별자 : 스트라이드 콘벌루션 → 서브샘플링
+- 생성자 활성함수 : ReLU
+- 판별자 활성함수 : 리키 ReLU
+- 배치 정규화, Adam 옵티마이저
+
+## 7. WGAN(Wasserstein GAN)
+
+- 와서스테인 거리를 측도로 사용 → 두 분포가 겹치지 않아도 거리 측정 가능
+    
+    $$
+    EMD(P_r, P_\theta)=\inf_{r\in\prod}\sum_{x, y}\|x-y\|\gamma(x, y)=\inf_{r\in\prod}\sum_{x, y}\mathbb{E}_{(x, y)\sim\gamma(x, y)}\|x-y\|
+    $$
+    
+
+## 8. PGGAN(Progressive Growing GAN)
+
+- 4×4 저해상도 이미지부터 1024×1024 고해상도 이미지까지 해상도를 높여가면서 커리큘럼 학습하는 GAN 모델
+
+## 9. Pix2Pix
+
+- 이미지 변환(Image-to-Image Translation) 기법
+- 이미지를 다른 이미지로 변환
+- CGAN(Conditional GAN) : 데이터의 카테고리에 나타내는 조건을 입력하면 해당 카테고리의 샘플을 생성하는 GAN 모델
