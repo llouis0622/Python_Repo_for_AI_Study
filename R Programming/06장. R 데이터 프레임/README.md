@@ -327,3 +327,352 @@
     # 5    홍길동     1      M      92    86  FALSE
     # 6 Jane Eyre     4      F      90    85  FALSE
     ```
+
+# 3. 데이터 프레임 각 열의 지정
+
+- 데이터 프레임은 리스트 타입
+    
+    ```r
+    typeof(students)
+    # "list"
+    
+    attributes(students)
+    # $names
+    # "name" "grade" "gender" "midterm" "final" "retake"
+    # $class
+    # "data.frame"
+    # $row.names
+    # 1 2 3 4 5
+    ```
+    
+- 리스트 형식으로 데이터 프레임의 열 지정
+    
+    ```r
+    data_frame_name$column_name
+    data_frame_name[[column_number]]
+    data_frame_name[[column_name]]
+    ```
+    
+    ```r
+    students$gender
+    # "M" "F" "M" "F" "M"
+    
+    students[["midterm"]]
+    # 74 82 67 89 92
+    
+    students[[5]]
+    # 91 77 88 78 86
+    
+    students$name
+    # "김철수" "김영희" "이철수" "이영희" "홍길동"
+    
+    typeof(students$name)
+    # "character"
+    ```
+    
+- 데이터 프레임의 각 열은 벡터
+    
+    ```r
+    students$midterm * 2
+    # 148 164 134 178 184
+    
+    sum(students$midterm)
+    # 404
+    
+    students$midterm[5]
+    # 92
+    
+    students$midterm[5] <- 50
+    students[[4]][3:5]
+    # 67 89 50
+    
+    students$hw <- c(8, 9, 7, 8, 10)
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    ```
+    
+
+# 4. 데이터 프레임의 필터링
+
+## 1. 리스트 형식으로 필터링
+
+- 리스트로서 필터링은 1차원 인덱스 구조를 가짐
+    
+    ```r
+    data_frame_name[index_vector]
+    ```
+    
+    ```r
+    students.new <- students[1:2]
+    #     name grade
+    # 1 김철수     1
+    # 2 김영희     4
+    # 3 이철수     3
+    # 4 이영희     2
+    # 5 홍길동     1
+    
+    students.new <- students[-(1:2)]
+    #   gender midterm final retake hw
+    # 1      M      74    91   TRUE  8
+    # 2      F      82    77  FALSE  9
+    # 3      M      67    88  FALSE  7
+    # 4      F      89    78   TRUE  8
+    # 5      M      50    86  FALSE 10
+    
+    student.new <- students[c("gender", "grade")]
+    #   gender grade
+    # 1      M     1
+    # 2      F     4
+    # 3      M     3
+    # 4      F     2
+    # 5      M     1
+    
+    student.new <- students[c(T, F, F, T, T, F)]
+    #     name midterm final hw
+    # 1 김철수      74    91  8
+    # 2 김영희      82    77  9
+    # 3 이철수      67    88  7
+    # 4 이영희      89    78  8
+    # 5 홍길동      50    86 10
+    
+    height <- c(172, 167, 181, 162, 178)
+    students.new <- data.frame(students[2:3], height=height)
+    #   grade gender height
+    # 1     1      M    172
+    # 2     4      F    167
+    # 3     3      M    181
+    # 4     2      F    162
+    # 5     1      M    178
+    ```
+    
+- 열 지정하기 vs 한 열만 데이터 프레임으로 필터링
+    
+    ```r
+    a <- students[2]
+    #   grade
+    # 1     1
+    # 2     4
+    # 3     3
+    # 4     2
+    # 5     1
+    
+    typeof(a)
+    # "list"
+    
+    attributes(a)
+    # $names
+    # "grade"
+    # $row.names
+    # 1 2 3 4 5
+    # $class
+    # "data.frame"
+    
+    a <- students[[2]]
+    # 1 4 3 2 1
+    
+    typeof(a)
+    # "double"
+    
+    attributes(a)
+    # NULL
+    ```
+    
+
+## 2. 행렬 형식으로 필터링
+
+- 행렬로서 필터링은 2차원 인덱스 구조를 가짐
+    
+    ```r
+    data_frame_name[row_index_vector, column_index_vector]
+    ```
+    
+    ```r
+    students[1,]
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    
+    students[2:3,]
+    #     name grade gender midterm final retake hw
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    
+    students[-(2:3),]
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    
+    students[,4]
+    # 74 82 67 89 50
+    
+    students[,-4]
+    #     name grade gender final retake hw
+    # 1 김철수     1      M    91   TRUE  8
+    # 2 김영희     4      F    77  FALSE  9
+    # 3 이철수     3      M    88  FALSE  7
+    # 4 이영희     2      F    78   TRUE  8
+    # 5 홍길동     1      M    86  FALSE 10
+    
+    students[, c(2, 4)]
+    #   grade midterm
+    # 1     1      74
+    # 2     4      82
+    # 3     3      67
+    # 4     2      89
+    # 5     1      50
+    
+    students[2:4, 3:5]
+    #   gender midterm final
+    # 2      F      82    77
+    # 3      M      67    88
+    # 4      F      89    78
+    
+    students$midterm >= 80
+    # FALSE TRUE FALSE TRUE FALSE
+    
+    students[students$midterm >= 80, ]
+    #     name grade gender midterm final retake hw
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 4 이영희     2      F      89    78   TRUE  8
+    
+    students[students$midterm >= 80, c("name", "grade", "gender")]
+    #     name grade gender
+    # 2 김영희     4      F
+    # 4 이영희     2      F
+    
+    students[students$grade != 1, c("name", "grade", "gender")]
+    #     name grade gender
+    # 2 김영희     4      F
+    # 3 이철수     3      M
+    # 4 이영희     2      F
+    ```
+    
+- 행렬 필터링 방법을 이용한 데이터 프레임 정렬
+    
+    ```r
+    order(students$grade)
+    # 1 5 4 3 2
+    
+    students[order(students$grade), ]
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 2 김영희     4      F      82    77  FALSE  9
+    
+    order(students$final, decreasing = TRUE)
+    # 1 3 5 4 2
+    
+    students[order(students$final, decreasing = TRUE), ]
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 5 홍길동     1      M      50    86  FALSE 10
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 2 김영희     4      F      82    77  FALSE  9
+    
+    order(students$grade, students$final)
+    # 5 1 4 3 2
+    
+    students[order(students$grade, students$final), ]
+    #     name grade gender midterm final retake hw
+    # 5 홍길동     1      M      50    86  FALSE 10
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 2 김영희     4      F      82    77  FALSE  9
+    
+    students[order(students$grade, students$final, decreasing=T), ]
+    #     name grade gender midterm final retake hw
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    
+    students[order(students$grade, -students$final), ]
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 2 김영희     4      F      82    77  FALSE  9
+    ```
+    
+
+## 3. `subset()` 을 이용한 필터링
+
+- `subset()` : 벡터, 행렬, 데이터 프레임에서 조건에 맞는 부분을 반환
+    
+    ```r
+    subset(x, subset, select, drop=FALSE, ...)
+    ```
+    
+- `subset()` 을 이용한 벡터 필터링
+    
+    ```r
+    x <- c(7, 9, NA, 5, 2)
+    x[x>6]
+    # 7 9 NA
+    
+    subset(x, x> 6)
+    # 7 9
+    ```
+    
+- `subset()` 을 이용한 데이터 프레임 필터링
+    
+    ```r
+    y <- 1:5
+    z <- -1:-5
+    long.name <- data.frame(x, y, z)
+    #    x y  z
+    # 1  7 1 -1
+    # 2  9 2 -2
+    # 3 NA 3 -3
+    # 4  5 4 -4
+    # 5  2 5 -5
+    
+    rm(x, y, z)
+    long.name[long.name$x>6, ]
+    #     x  y  z
+    # 1   7  1 -1
+    # 2   9  2 -2
+    # NA NA NA NA
+    
+    subset(long.name, x>6)
+    #   x y  z
+    # 1 7 1 -1
+    # 2 9 2 -2
+    
+    long.name[long.name$x>6, 2:3]
+    #     y  z
+    # 1   1 -1
+    # 2   2 -2
+    # NA NA NA
+    
+    subset(long.name, x>6, y:z)
+    #   y  z
+    # 1 1 -1
+    # 2 2 -2
+    
+    long.name[long.name$x >6, c("x", "z")]
+    #     x  z
+    # 1   7 -1
+    # 2   9 -2
+    # NA NA NA
+    
+    subset(long.name, x>6, c(x, z))
+    #   x  z
+    # 1 7 -1
+    # 2 9 -2
+    
+    subset(long.name, x>6, -z)
+    #   x y
+    # 1 7 1
+    # 2 9 2
+    ```
