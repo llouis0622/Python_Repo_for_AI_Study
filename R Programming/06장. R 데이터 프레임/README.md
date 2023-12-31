@@ -259,8 +259,9 @@
     
     fa3[6] <- "Male"
     ```
+    
 
-    # 2. 데이터 프레임 만들기
+# 2. 데이터 프레임 만들기
 
 - `data.frame()` : 벡터, 행렬, 요인, 다른 데이터 프레임을 묶어 새로운 데이터 프레임 생성
     - 벡터는 모두 같은 길이, 행렬/데이터 프레임은 모두 같은 행 수
@@ -327,6 +328,7 @@
     # 5    홍길동     1      M      92    86  FALSE
     # 6 Jane Eyre     4      F      90    85  FALSE
     ```
+    
 
 # 3. 데이터 프레임 각 열의 지정
 
@@ -676,3 +678,473 @@
     # 1 7 1
     # 2 9 2
     ```
+    
+
+# 5. 데이터 프레임에 함수 적용하기
+
+- 리스트로서 각 열에 함수 적용하기
+    
+    ```r
+    lapply(students[4:5], mean)
+    # $midterm
+    # 72.4
+    # $final
+    # 84
+    
+    sapply(students[4:5], mean)
+    # midterm   final 
+    #    72.4    84.0
+    
+    sapply(students[4:5], summary)
+    #         midterm final
+    # Min.       50.0    77
+    # 1st Qu.    67.0    78
+    # Median     74.0    86
+    # Mean       72.4    84
+    # 3rd Qu.    82.0    88
+    # Max.       89.0    91
+    ```
+    
+- 행렬 함수 적용하기
+    
+    ```r
+    nrow(students)
+    # 5
+    
+    ncol(students)
+    # 7
+    
+    t(students)
+    #         [,1]     [,2]     [,3]     [,4]     [,5]    
+    # name    "김철수" "김영희" "이철수" "이영희" "홍길동"
+    # grade   "1"      "4"      "3"      "2"      "1"     
+    # gender  " M"     "F"      "M"      "F"      "M"     
+    # midterm "74"     "82"     "67"     "89"     "50"    
+    # final   "91"     "77"     "88"     "78"     "86"    
+    # retake  "TRUE"   "FALSE"  "FALSE"  "TRUE"   "FALSE" 
+    # hw      " 8"     " 9"     " 7"     " 8"     "10"
+    ```
+    
+- `apply()` 로 행이나 열에 함수 적용하기
+    
+    ```r
+    apply(students, 2, mean)
+    #    name   grade  gender midterm   final  retake      hw 
+    #      NA      NA      NA      NA      NA      NA      NA
+    
+    apply(students[4:5], 2, mean)
+    # midterm   final
+    #    72.4    84.0
+    
+    apply(students[4:5], 1, sum)
+    # 165 159 155 167 136
+    ```
+    
+- 긴 데이터 프레임의 앞 또는 뒷 부분 출력하기
+    
+    ```r
+    nrow(iris)
+    # 150
+    
+    head(iris)
+    #   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+    # 1          5.1         3.5          1.4         0.2  setosa
+    # 2          4.9         3.0          1.4         0.2  setosa
+    # 3          4.7         3.2          1.3         0.2  setosa
+    # 4          4.6         3.1          1.5         0.2  setosa
+    # 5          5.0         3.6          1.4         0.2  setosa
+    # 6          5.4         3.9          1.7         0.4  setosa
+    
+    tail(iris)
+    #     Sepal.Length Sepal.Width Petal.Length Petal.Width   Species
+    # 145          6.7         3.3          5.7         2.5 virginica
+    # 146          6.7         3.0          5.2         2.3 virginica
+    # 147          6.3         2.5          5.0         1.9 virginica
+    # 148          6.5         3.0          5.2         2.0 virginica
+    # 149          6.2         3.4          5.4         2.3 virginica
+    # 150          5.9         3.0          5.1         1.8 virginica
+    
+    head(iris, n=3)
+    #   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+    # 1          5.1         3.5          1.4         0.2  setosa
+    # 2          4.9         3.0          1.4         0.2  setosa
+    # 3          4.7         3.2          1.3         0.2  setosa
+    
+    tail(iris, n=2)
+    #     Sepal.Length Sepal.Width Petal.Length Petal.Width   Species
+    # 149          6.2         3.4          5.4         2.3 virginica
+    # 150          5.9         3.0          5.1         1.8 virginica
+    ```
+    
+
+# 6. 파일에서 데이터 읽어오기
+
+## 1. 텍스트 파일에서 데이터 읽어오기
+
+- 작업 디렉토리 설정
+    
+    ```r
+    WD <- getwd()
+    setwd(file.path(WD, "data"))
+    list.files(pattern = "txt")
+    # [1] "courses2.txt" "scores_no_header.txt" "scores_rn.txt"       
+    # [4] "scores.txt" "students.txt"
+    ```
+    
+- 머리 행이 있는 텍스트 데이터 파일 읽기
+    
+    ```r
+    prov  scores
+    서울  25
+    대전  35
+    천안  42
+    
+    prov.scores <- read.table("scores.txt", header=TRUE, fileEncoding="UTF-8")
+    #   prov scores
+    # 1 서울     25
+    # 2 대전     35
+    # 3 천안     42
+    
+    attributes(prov.scores)
+    # $names
+    # "prov" "scores"
+    # $class
+    # "data.frame"
+    # $row.names
+    # 1 2 3
+    ```
+    
+- 행 이름이 있는 텍스트 데이터 파일 읽기
+    
+    ```r
+        prov    scores
+    10  서울  25
+    20  대전  35
+    30  천안  42
+    
+    prov.scores <- read.table("scores_rn.txt", fileEncoding="UTF-8")
+    #    prov scores
+    # 10 서울     25
+    # 20 대전     35
+    # 30 천안     42
+    ```
+    
+- 머리 행이 없는 텍스트 데이터 파일 읽기
+    
+    ```r
+    서울  25
+    대전  35
+    천안  42
+    
+    prov.scores <- read.table("scores_no_header.txt", header=FALSE, fileEncoding="UTF-8")
+    #     V1 V2
+    # 1 서울 25
+    # 2 대전 35
+    # 3 천안 42
+    ```
+    
+- `edit()` : 데이터 프레임에서 데이터 편집
+    
+    ```r
+    prov.scores.new <- edit(prov.scores)
+    ```
+    
+
+## 2. CSV 파일에서 데이터 읽어오기
+
+- CSV 파일 : 데이터의 각 필드가 쉼표로 분리되어 있는 파일
+- `read.csv()`
+    
+    ```r
+    sr <- read.csv(file="suicide_rates.csv", fileEncoding="UTF-8")
+    nrow(sr)
+    # 105
+    
+    head(sr)
+    #               Country Year Males Females
+    # 1             ALBANIA    3   4.7     3.3
+    # 2 ANTIGUA AND BARBUDA   95   0.0     0.0
+    # 3           ARGENTINA    8  12.6     3.0
+    # 4             ARMENIA    8   2.8     1.1
+    # 5           AUSTRALIA    6  12.8     3.6
+    # 6             AUSTRIA    9  23.8     7.1
+    
+    sr2 <- read.table(file="suicide_rates.csv", header=TRUE, sep=",", fileEncoding="UTF-8")
+    nrow(sr2)
+    # 105
+    
+    head(sr2)
+    #               Country Year Males Females
+    # 1             ALBANIA    3   4.7     3.3
+    # 2 ANTIGUA AND BARBUDA   95   0.0     0.0
+    # 3           ARGENTINA    8  12.6     3.0
+    # 4             ARMENIA    8   2.8     1.1
+    # 5           AUSTRALIA    6  12.8     3.6
+    # 6             AUSTRIA    9  23.8     7.1
+    ```
+    
+- `read.csv()` 와 관련된 흔한 실수
+    
+    ```r
+    prov.scores <- read.table("scores.txt", header=TRUE, fileEncoding="UTF-8")
+    #   prov scores
+    # 1 서울     25
+    # 2 대전     35
+    # 3 천안     42
+    
+    prov.scores.csv <- read.csv("scores.txt", fileEncoding="UTF-8")
+    #   prov..scores
+    # 1     서울  25
+    # 2     대전  35
+    # 3     천안  42
+    
+    mean(prov.scores$scores)
+    # 34
+    
+    mean(prov.scores.csv$scores)
+    # Warning in mean.default(prov.scores.csv$scores): 인자가 수치형 또는 논리형이 아니므로 NA를 반환합니다.
+    # NA
+    
+    ncol(prov.scores)
+    # 2
+    
+    names(prov.scores)
+    # "prov" "scores"
+    
+    ncol(prov.scores.csv)
+    # 1
+    
+    names(prov.scores.csv)
+    # "prov..scores"
+    ```
+    
+
+## 3. Excel 파일에서 데이터 읽기
+
+```r
+install.packages("readxl")
+
+library(readxl)
+project <- read_excel("dataMerge.xlsx", sheet="project")
+# # A tibble: 4 × 2
+#   Team  Project
+#   <chr>   <dbl>
+# 1 A          80
+# 2 B          90
+# 3 C          85
+# 4 D          75
+
+class1 <- read_excel("dataMerge.xlsx")
+# # A tibble: 5 × 6
+#   ID    Name   Adress Midterm Final Team 
+#   <chr> <chr>  <chr>    <dbl> <dbl> <chr>
+# 1 015   김철수 서울        78    59 A    
+# 2 018   김영희 경기        85    87 A    
+# 3 025   이철수 충남        80    70 B    
+# 4 034   이영희 대전        92    89 B    
+# 5 151   홍길동 세종        58    66 B
+```
+
+# 7. 데이터 프레임을 파일로 쓰기
+
+- `write.table()` 과 `write.csv()`
+    
+    ```r
+    sr$Avg <- (sr$Males + sr$Females) / 2
+    head(sr)
+    #               Country Year Males Females   Avg
+    # 1             ALBANIA    3   4.7     3.3  4.00
+    # 2 ANTIGUA AND BARBUDA   95   0.0     0.0  0.00
+    # 3           ARGENTINA    8  12.6     3.0  7.80
+    # 4             ARMENIA    8   2.8     1.1  1.95
+    # 5           AUSTRALIA    6  12.8     3.6  8.20
+    # 6             AUSTRIA    9  23.8     7.1 15.45
+    
+    write.csv(sr, file="sr.csv")
+    # "","Country","Year","Males","Females","Avg"
+    # "1","ALBANIA",3,4.7,3.3,4
+    # "2","ANTIGUA AND BARBUDA",95,0,0,0
+    # "3","ARGENTINA",8,12.6,3,7.8
+    # "4","ARMENIA",8,2.8,1.1,1.95
+    
+    write.csv(sr, file="sr2.csv", row.names=F)
+    # "Country","Year","Males","Females","Avg"
+    # "ALBANIA",3,4.7,3.3,4
+    # "ANTIGUA AND BARBUDA",95,0,0,0
+    # "ARGENTINA",8,12.6,3,7.8
+    # "ARMENIA",8,2.8,1.1,1.95
+    
+    students
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    
+    write.table(students, "students.txt", row.names=FALSE, fileEncoding="UTF-8")
+    # "name" "grade" "gender" "midterm" "final" "retake" "hw"
+    # "김철수" 1 " M" 74 91 TRUE 8
+    # "김영희" 4 "F" 82 77 FALSE 9
+    # "이철수" 3 "M" 67 88 FALSE 7
+    # "이영희" 2 "F" 89 78 TRUE 8
+    # "홍길동" 1 "M" 50 86 FALSE 10
+    
+    write.csv(students, "students.csv", row.names=FALSE, fileEncoding="UTF-8")
+    # "name","grade","gender","midterm","final","retake","hw"
+    # "김철수",1," M",74,91,TRUE,8
+    # "김영희",4,"F",82,77,FALSE,9
+    # "이철수",3,"M",67,88,FALSE,7
+    # "이영희",2,"F",89,78,TRUE,8
+    # "홍길동",1,"M",50,86,FALSE,10
+    
+    write.csv(students, "students_rn.csv", row.names=TRUE, fileEncoding="UTF-8")
+    # "","name","grade","gender","midterm","final","retake","hw"
+    # "1","김철수",1," M",74,91,TRUE,8
+    # "2","김영희",4,"F",82,77,FALSE,9
+    # "3","이철수",3,"M",67,88,FALSE,7
+    # "4","이영희",2,"F",89,78,TRUE,8
+    # "5","홍길동",1,"M",50,86,FALSE,10
+    
+    read.table("students.txt", header=TRUE, fileEncoding="UTF-8")
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    
+    read.csv("students.csv", header=TRUE, fileEncoding="UTF-8")
+    #     name grade gender midterm final retake hw
+    # 1 김철수     1      M      74    91   TRUE  8
+    # 2 김영희     4      F      82    77  FALSE  9
+    # 3 이철수     3      M      67    88  FALSE  7
+    # 4 이영희     2      F      89    78   TRUE  8
+    # 5 홍길동     1      M      50    86  FALSE 10
+    
+    write.table(students, "students.csv", sep=",", row.names=FALSE, fileEncoding="UTF-8")
+    write.table(students, "students_rn.csv", sep=",", row.names=TRUE, fileEncoding="UTF-8"
+    ```
+    
+- 데이터 프레임을 Excel 파일에 쓰기
+    
+    ```r
+    install.packages("writexl")
+    
+    library(writexl)
+    write_xlsx(students, "students1.xlsx")
+    
+    write_xlsx(list(students=students, sr=sr, project=project), "multipleData.xlsx")
+    ```
+    
+
+## 1. 바이너리 형식으로 데이터 객체 저장 및 복원
+
+```r
+x <- 1:3
+# 1 2 3
+
+y <- matrix(4:12, nrow=3, ncol=3)
+#      [,1] [,2] [,3]
+# [1,]    4    7   10
+# [2,]    5    8   11
+# [3,]    6    9   12
+
+z <- data.frame(x, y)
+#   x X1 X2 X3
+# 1 1  4  7 10
+# 2 2  5  8 11
+# 3 3  6  9 12
+
+save(x, y, z, file = "xyz.RData")
+
+rm(x, y, z)
+# Error in eval(expr, envir, enclos): 객체 'x'를 찾을 수 없습니다
+# Error in eval(expr, envir, enclos): 객체 'y'를 찾을 수 없습니다
+# Error in eval(expr, envir, enclos): 객체 'z'를 찾을 수 없습니다
+
+load("xyz.RData")
+x
+y
+z
+# 1 2 3
+#      [,1] [,2] [,3]
+# [1,]    4    7   10
+# [2,]    5    8   11
+# [3,]    6    9   12
+#   x X1 X2 X3
+# 1 1  4  7 10
+# 2 2  5  8 11
+# 3 3  6  9 12
+```
+
+# 8. 데이터 프레임의 열을 변수처럼 이용하는 방법
+
+- 변수 검색 경로
+    
+    ```r
+    search()
+    # [1] ".GlobalEnv" "package:writexl" "package:readxl"   
+    # [4] "package:stats" "package:graphics" "package:grDevices"
+    # [7] "package:utils" "package:datasets" "package:methods"  
+    # [10] "Autoloads" "package:base"
+    ```
+    
+- `attach()` 로 데이터 프레임을 검색 경로에 등록하기
+    
+    ```r
+    obj <- ls()
+    rm(list=obj[which(obj != "students")])
+    ls()
+    # "obj" "students"
+    
+    rm(obj)
+    objects()
+    # "students"
+    
+    retake
+    # Error in eval(expr, envir, enclos): 객체 'retake'를 찾을 수 없습니다
+    
+    attach(students)
+    retake
+    # TRUE FALSE FALSE TRUE FALSE
+    
+    search()
+    # [1] ".GlobalEnv" "students" "package:writexl"  
+    # [4] "package:readxl" "package:stats" "package:graphics" 
+    # [7] "package:grDevices" "package:utils" "package:datasets" 
+    # [10] "package:methods" "Autoloads" "package:base"
+    ```
+    
+- `attach()` 로 등록된 변수는 데이터 프레임과 독립적인 복사본
+    
+    ```r
+    retake[1] <- NA
+    # NA FALSE FALSE TRUE FALSE
+    
+    students$retake
+    # TRUE FALSE FALSE TRUE FALSE
+    
+    students$retake[5] <- NA
+    # TRUE FALSE FALSE TRUE NA
+    
+    retake
+    # NA FALSE FALSE TRUE FALSE
+    ```
+    
+- `detach()`
+    
+    ```r
+    detach(students)
+    search()
+    # [1] ".GlobalEnv" "package:writexl" "package:readxl"   
+    # [4] "package:stats" "package:graphics" "package:grDevices"
+    # [7] "package:utils" "package:datasets" "package:methods"  
+    # [10] "Autoloads" "package:base"
+    ```
+    
+- `attach()` 로 등록된 변수의 검색 경로 상의 위치
+    - 어떤 문제와 관련된 모든 변수를 데이터 프레임에 포함시키고 적절한 이름 부여
+    - 분석하는 문제와 관련된 데이터 프레임을 `attach()` 하여 검색 경로 위치 두 번째에 추가
+    - 분석하는 문제를 떠나기 전에 다음에 사용하고자 하는 변수는 `$` 를 이용하여 데이터 프레임에 저장
+    - 작업공간의 모든 필요 없는 변수 삭제
