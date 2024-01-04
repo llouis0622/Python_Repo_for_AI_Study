@@ -790,3 +790,405 @@ select(a, cty, hwy, everything())
 # 7    16    24 hyundai      tiburon   2.7  2008     6 manual(m… f     r     subc…
 # 8    17    24 hyundai      tiburon   2.7  2008     6 manual(m… f     r     subc…
 ```
+
+# 8. `mutate()` 로 새로운 변수 만들기
+
+```r
+mutate(데이터프레임, 새로운_변수=기존_변수_연산식, ....)
+```
+
+```r
+b <- select(a, -(cyl:drv), -(fl:class))
+# A tibble: 8 × 6
+#   manufacturer model   displ  year   cty   hwy
+#   <chr>        <chr>   <dbl> <int> <int> <int>
+# 1 hyundai      sonata    2.4  2008    21    30
+# 2 hyundai      sonata    2.4  2008    21    31
+# 3 hyundai      sonata    3.3  2008    19    28
+# 4 hyundai      tiburon   2    2008    20    28
+# 5 hyundai      tiburon   2    2008    20    27
+# 6 hyundai      tiburon   2.7  2008    17    24
+# 7 hyundai      tiburon   2.7  2008    16    24
+# 8 hyundai      tiburon   2.7  2008    17    24
+
+mutate(b, sum=cty + hwy)
+# A tibble: 8 × 7
+#   manufacturer model   displ  year   cty   hwy   sum
+#   <chr>        <chr>   <dbl> <int> <int> <int> <int>
+# 1 hyundai      sonata    2.4  2008    21    30    51
+# 2 hyundai      sonata    2.4  2008    21    31    52
+# 3 hyundai      sonata    3.3  2008    19    28    47
+# 4 hyundai      tiburon   2    2008    20    28    48
+# 5 hyundai      tiburon   2    2008    20    27    47
+# 6 hyundai      tiburon   2.7  2008    17    24    41
+# 7 hyundai      tiburon   2.7  2008    16    24    40
+# 8 hyundai      tiburon   2.7  2008    17    24    41
+
+mutate(b, sum=cty+hwy, mean=(cty+hwy)/2, ratio=cty/hwy*100)
+# A tibble: 8 × 9
+#   manufacturer model   displ  year   cty   hwy   sum  mean ratio
+#   <chr>        <chr>   <dbl> <int> <int> <int> <int> <dbl> <dbl>
+# 1 hyundai      sonata    2.4  2008    21    30    51  25.5  70  
+# 2 hyundai      sonata    2.4  2008    21    31    52  26    67.7
+# 3 hyundai      sonata    3.3  2008    19    28    47  23.5  67.9
+# 4 hyundai      tiburon   2    2008    20    28    48  24    71.4
+# 5 hyundai      tiburon   2    2008    20    27    47  23.5  74.1
+# 6 hyundai      tiburon   2.7  2008    17    24    41  20.5  70.8
+# 7 hyundai      tiburon   2.7  2008    16    24    40  20    66.7
+# 8 hyundai      tiburon   2.7  2008    17    24    41  20.5  70.8
+```
+
+## 1. `transmute()` 로 새로운 변수만 남기기
+
+```r
+transmute(b, sum=cty+hwy, mean=(cty+hwy)/2, ratio=cty/hwy*100)
+# A tibble: 8 × 3
+#     sum  mean ratio
+#   <int> <dbl> <dbl>
+# 1    51  25.5  70  
+# 2    52  26    67.7
+# 3    47  23.5  67.9
+# 4    48  24    71.4
+# 5    47  23.5  74.1
+# 6    41  20.5  70.8
+# 7    40  20    66.7
+# 8    41  20.5  70.8
+```
+
+## 2. 새로운 변수를 만들 때 사용할 수 있는 함수들
+
+- `row_number()` : 각 행의 행번호, 일련번호를 붙임
+- `lead()` : 기존 변수를 한 행, 또는 여러 행 빠르게 시작
+- `lag()` : 기존 변수를 한 행, 또는 여러 행 늦게 시작
+- `cumsum()`, `cummean()` : 누적 합, 평균
+- `min_rank()` : 가장 작은 것부터 차례대로 크기 순서로 등수를 매김
+    
+    ```r
+    mutate(b, newName=paste(manufacturer, model, sep="-"), dis3=displ >= 3)
+    # A tibble: 8 × 8
+    #   manufacturer model   displ  year   cty   hwy newName         dis3 
+    #   <chr>        <chr>   <dbl> <int> <int> <int> <chr>           <lgl>
+    # 1 hyundai      sonata    2.4  2008    21    30 hyundai-sonata  FALSE
+    # 2 hyundai      sonata    2.4  2008    21    31 hyundai-sonata  FALSE
+    # 3 hyundai      sonata    3.3  2008    19    28 hyundai-sonata  TRUE 
+    # 4 hyundai      tiburon   2    2008    20    28 hyundai-tiburon FALSE
+    # 5 hyundai      tiburon   2    2008    20    27 hyundai-tiburon FALSE
+    # 6 hyundai      tiburon   2.7  2008    17    24 hyundai-tiburon FALSE
+    # 7 hyundai      tiburon   2.7  2008    16    24 hyundai-tiburon FALSE
+    # 8 hyundai      tiburon   2.7  2008    17    24 hyundai-tiburon FALSE
+    
+    store <- data.frame(month=1:6, sales=c(23, 45, 34, 67, 30, 41))
+    #   month sales
+    # 1     1    23
+    # 2     2    45
+    # 3     3    34
+    # 4     4    67
+    # 5     5    30
+    # 6     6    41
+    
+    mutate(store, before=lag(sales, n=1), after=lead(sales, n=1), total=cumsum(sales), mean=cummean(sales), rank1=min_rank(sales), rank2=min_rank(desc(sales)))
+    #   month sales before after total  mean rank1 rank2
+    # 1     1    23     NA    45    23 23.00     1     6
+    # 2     2    45     23    34    68 34.00     5     2
+    # 3     3    34     45    67   102 34.00     3     4
+    # 4     4    67     34    30   169 42.25     6     1
+    # 5     5    30     67    41   199 39.80     2     5
+    # 6     6    41     30    NA   240 40.00     4     3
+    
+    mutate(b, id = row_number())
+    # A tibble: 8 × 7
+    #   manufacturer model   displ  year   cty   hwy    id
+    #   <chr>        <chr>   <dbl> <int> <int> <int> <int>
+    # 1 hyundai      sonata    2.4  2008    21    30     1
+    # 2 hyundai      sonata    2.4  2008    21    31     2
+    # 3 hyundai      sonata    3.3  2008    19    28     3
+    # 4 hyundai      tiburon   2    2008    20    28     4
+    # 5 hyundai      tiburon   2    2008    20    27     5
+    # 6 hyundai      tiburon   2.7  2008    17    24     6
+    # 7 hyundai      tiburon   2.7  2008    16    24     7
+    # 8 hyundai      tiburon   2.7  2008    17    24     8
+    ```
+    
+
+# 9. `summarize()` 로 변수 요약하기
+
+- `n()` : 행의 수
+- `sum()` : 수치 변수의 합
+- `mean()` : 수치 변수의 균
+- `median()` : 수치 변수의 중위수
+- `sd()` : 수치 변수의 표준편차
+- `var()` : 수치 변수의 분산
+- `min()` : 수치 변수의 최소값
+- `max()` : 수치 변수의 최대값
+- `quantile(변수, probs)` : 수치 변수의 probs` 분위수를 구한다.
+    
+    ```r
+    summarize(데이터프레임, 요약변수이름=요약함수(변수), ....)
+    ```
+    
+    ```r
+    summarize(b, count=n(), mean=mean(cty), med=median(cty), min=min(cty), max=max(cty))
+    # A tibble: 1 × 5
+    #   count  mean   med   min   max
+    #   <int> <dbl> <dbl> <int> <int>
+    # 1     8  18.9  19.5    16    21
+    
+    summarize(b, meanCty=mean(cty), meanHwy=mean(hwy), medianCty=median(cty), medianHqy=median(hwy))
+    # A tibble: 1 × 4
+    #   meanCty meanHwy medianCty medianHqy
+    #     <dbl>   <dbl>     <dbl>     <dbl>
+    # 1    18.9      27      19.5      27.5
+    ```
+    
+
+## 1. `across()` 로 여러 변수를 요약하기
+
+```r
+summarize(b, across(c(cty, hwy), mean))
+# A tibble: 1 × 2
+#     cty   hwy
+#   <dbl> <dbl>
+# 1  18.9    27
+
+summarize(b, across(c(cty, hwy), list(mean=mean, med=median)))
+# A tibble: 1 × 4
+#   cty_mean cty_med hwy_mean hwy_med
+#      <dbl>   <dbl>    <dbl>   <dbl>
+# 1     18.9    19.5       27    27.5
+
+summarize(b, across(c(cty, hwy), list(mean=mean, med=median), .names="{.fn}-{.col}"))
+# A tibble: 1 × 4
+#   `mean-cty` `med-cty` `mean-hwy` `med-hwy`
+#        <dbl>     <dbl>      <dbl>     <dbl>
+# 1       18.9      19.5         27      27.5
+
+summarize(b, across(c(cty, hwy), mean, .names="mean-{.col}"), across(c(cty, hwy), median, .names="med-{.col}"))
+# A tibble: 1 × 4
+#   `mean-cty` `mean-hwy` `med-cty` `med-hwy`
+#        <dbl>      <dbl>     <dbl>     <dbl>
+# 1       18.9         27      19.5      27.5
+
+summarize(b, across(where(is.numeric), sd))
+# A tibble: 1 × 4
+#   displ  year   cty   hwy
+#   <dbl> <dbl> <dbl> <dbl>
+# 1 0.427     0  1.96  2.78
+```
+
+# 10. `group_by()` 로 그룹별로 요약하기
+
+```r
+group_by(데이터프레임, 그룹기준변수1, 그룹기준변수2, ...)
+```
+
+```r
+byModel <- group_by(b, model)
+summarize(byModel, count=n(), mean=mean(cty), sd=sd(cty))
+# A tibble: 2 × 4
+#   model   count  mean    sd
+#   <chr>   <int> <dbl> <dbl>
+# 1 sonata      3  20.3  1.15
+# 2 tiburon     5  18    1.87
+
+byModel
+# A tibble: 8 × 6
+# Groups:   model [2]
+#   manufacturer model   displ  year   cty   hwy
+#   <chr>        <chr>   <dbl> <int> <int> <int>
+# 1 hyundai      sonata    2.4  2008    21    30
+# 2 hyundai      sonata    2.4  2008    21    31
+# 3 hyundai      sonata    3.3  2008    19    28
+# 4 hyundai      tiburon   2    2008    20    28
+# 5 hyundai      tiburon   2    2008    20    27
+# 6 hyundai      tiburon   2.7  2008    17    24
+# 7 hyundai      tiburon   2.7  2008    16    24
+# 8 hyundai      tiburon   2.7  2008    17    24
+
+byModel <- group_by(a, model, cyl)
+summarize(byModel, count=n(), mean=mean(cty))
+# `summarise()` has grouped output by 'model'. You can override using the `.groups` argument.
+# A tibble: 4 × 4
+# Groups:   model [2]
+#   model     cyl count  mean
+#   <chr>   <int> <int> <dbl>
+# 1 sonata      4     2  21  
+# 2 sonata      6     1  19  
+# 3 tiburon     4     2  20  
+# 4 tiburon     6     3  16.7
+```
+
+## 1. `group_by()` 로 그룹별로 새 변수 추가하기
+
+```r
+mutate(b, rank=min_rank(desc(hwy)))
+# A tibble: 8 × 7
+#   manufacturer model   displ  year   cty   hwy  rank
+#   <chr>        <chr>   <dbl> <int> <int> <int> <int>
+# 1 hyundai      sonata    2.4  2008    21    30     2
+# 2 hyundai      sonata    2.4  2008    21    31     1
+# 3 hyundai      sonata    3.3  2008    19    28     3
+# 4 hyundai      tiburon   2    2008    20    28     3
+# 5 hyundai      tiburon   2    2008    20    27     5
+# 6 hyundai      tiburon   2.7  2008    17    24     6
+# 7 hyundai      tiburon   2.7  2008    16    24     6
+# 8 hyundai      tiburon   2.7  2008    17    24     6
+
+mutate(byModel, rank=min_rank(desc(hwy)))
+# A tibble: 8 × 12
+# Groups:   model, cyl [4]
+#   manufacturer model displ  year   cyl trans drv     cty   hwy fl    class  rank
+#   <chr>        <chr> <dbl> <int> <int> <chr> <chr> <int> <int> <chr> <chr> <int>
+# 1 hyundai      sona…   2.4  2008     4 auto… f        21    30 r     mids…     2
+# 2 hyundai      sona…   2.4  2008     4 manu… f        21    31 r     mids…     1
+# 3 hyundai      sona…   3.3  2008     6 auto… f        19    28 r     mids…     1
+# 4 hyundai      tibu…   2    2008     4 manu… f        20    28 r     subc…     1
+# 5 hyundai      tibu…   2    2008     4 auto… f        20    27 r     subc…     2
+# 6 hyundai      tibu…   2.7  2008     6 auto… f        17    24 r     subc…     1
+# 7 hyundai      tibu…   2.7  2008     6 manu… f        16    24 r     subc…     1
+# 8 hyundai      tibu…   2.7  2008     6 manu… f        17    24 r     subc…     1
+```
+
+## 2. `count()` 로 개수 세기
+
+```r
+byModel <- group_by(b, model)
+summarise(byModel, n=n())
+# A tibble: 2 × 2
+#   model       n
+#   <chr>   <int>
+# 1 sonata      3
+# 2 tiburon     5
+
+count(b, model)
+# A tibble: 2 × 2
+#   model       n
+#   <chr>   <int>
+# 1 sonata      3
+# 2 tiburon     5
+
+count(mpg, class)
+# A tibble: 7 × 2
+#   class          n
+#   <chr>      <int>
+# 1 2seater        5
+# 2 compact       47
+# 3 midsize       41
+# 4 minivan       11
+# 5 pickup        33
+# 6 subcompact    35
+# 7 suv           62
+
+count(mpg, class, sort=TRUE)
+# A tibble: 7 × 2
+#   class          n
+#   <chr>      <int>
+# 1 suv           62
+# 2 compact       47
+# 3 midsize       41
+# 4 subcompact    35
+# 5 pickup        33
+# 6 minivan       11
+# 7 2seater        5
+
+count(mpg, class, cyl, sort=T)
+# A tibble: 19 × 3
+#    class        cyl     n
+#    <chr>      <int> <int>
+#  1 suv            8    38
+#  2 compact        4    32
+#  3 midsize        6    23
+#  4 subcompact     4    21
+#  5 pickup         8    20
+#  6 midsize        4    16
+#  7 suv            6    16
+#  8 compact        6    13
+#  9 minivan        6    10
+# 10 pickup         6    10
+# 11 suv            4     8
+# 12 subcompact     6     7
+# 13 2seater        8     5
+# 14 subcompact     8     5
+# 15 pickup         4     3
+# 16 compact        5     2
+# 17 midsize        8     2
+# 18 subcompact     5     2
+# 19 minivan        4     1
+```
+
+# 11. `%>%` 파이프 연산자
+
+## 1. 여러 단계를 거쳐 데이터를 변환할 때
+
+```r
+byModel <- group_by(mpg, model, year)
+meanCty <- summarize(byModel, count=n(), mean=mean(cty))
+# `summarise()` has grouped output by 'model'. You can override using the `.groups` argument.
+
+filter(meanCty, mean >= 22)
+# A tibble: 5 × 4
+# Groups:   model [3]
+#   model       year count  mean
+#   <chr>      <int> <int> <dbl>
+# 1 civic       1999     5  24.8
+# 2 civic       2008     4  24  
+# 3 corolla     1999     3  24.7
+# 4 corolla     2008     2  27  
+# 5 new beetle  1999     4  26
+
+filter(summarize(group_by(mpg, model, year), count=n(), mean=mean(cty)), mean>=22)
+# `summarise()` has grouped output by 'model'. You can override using the `.groups` argument.
+# A tibble: 5 × 4
+# Groups:   model [3]
+#   model       year count  mean
+#   <chr>      <int> <int> <dbl>
+# 1 civic       1999     5  24.8
+# 2 civic       2008     4  24  
+# 3 corolla     1999     3  24.7
+# 4 corolla     2008     2  27  
+# 5 new beetle  1999     4  26
+```
+
+## 2. 파이프 연산자
+
+- 데이터 변환이 여러 단계를 거칠 때 불필요한 변수의 생성 없이 함수 간에 중간 데이터 전달
+    
+    ```r
+    mpg %>% group_by(model, year) %>% summarize(count=n(), mean=mean(cty)) %>% filter(mean>=22)
+    # `summarise()` has grouped output by 'model'. You can override using the `.groups` argument.
+    # A tibble: 5 × 4
+    # Groups:   model [3]
+    #   model       year count  mean
+    #   <chr>      <int> <int> <dbl>
+    # 1 civic       1999     5  24.8
+    # 2 civic       2008     4  24  
+    # 3 corolla     1999     3  24.7
+    # 4 corolla     2008     2  27  
+    # 5 new beetle  1999     4  26
+    
+    b %>% group_by(model) %>% summarize(count=n(), mean=mean(cty)) %>% filter(mean>=20)
+    # Error: <text>:3:3: 예기치 않은 SPECIAL입니다
+    # 2:   summarize(count=n(), mean=mean(cty)) 
+    # 3:   %>%
+    #      ^
+    ```
+    
+
+## 3. `ungroup()`
+
+- 데이터 그룹화 중간 단계에서 해제
+    
+    ```r
+    byModel <- b %>% group_by(model) 
+    byModel %>% summarize(count=n())
+    # A tibble: 2 × 2
+    #   model   count
+    #   <chr>   <int>
+    # 1 sonata      3
+    # 2 tiburon     5
+    
+    byModel %>% ungroup() %>% summarize(count=n())
+    # A tibble: 1 × 1
+    #   count
+    #   <int>
+    # 1     8
+    ```
